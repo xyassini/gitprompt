@@ -19,6 +19,7 @@ const SYSTEM_PROMPTS = {
     4. Group related changes together logically
     5. Use conventional commit format: type(scope): description
     6. Make commits small and focused
+    7. Keep the commit messages short and concise.
     
     EXAMPLES OF GOOD ANALYSIS:
     - If package.json adds new dependencies → "chore(deps): add yargs and yoctocolors for CLI functionality"
