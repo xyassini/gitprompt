@@ -1,8 +1,14 @@
 # 🤖 aigito - AI-Powered Git Assistant
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-%23000000.svg?logo=bun&logoColor=white)](https://bun.sh)
+
 An intelligent CLI tool that automatically stages and commits files using AI-powered commit message generation.
 
-## Features
+> ⚠️ **Note**: This tool requires an OpenAI API key to function. It will analyze your code changes and generate commit messages using GPT-4.
+
+## ✨ Features
 
 - 🤖 **AI-powered commit messages** using GPT-4 with conventional commit format
 - 📊 **Line-by-line diff analysis** showing exactly what changed
@@ -12,41 +18,98 @@ An intelligent CLI tool that automatically stages and commits files using AI-pow
 - 🎨 **Beautiful colored CLI** with interactive confirmations
 - ⚡ **YOLO mode** for automatic commits without confirmation
 
-## Installation
+## 🚀 Installation
+
+### Prerequisites
+
+- **Node.js** (v18+) or **Bun** (v1.0+)
+- **Git** configured with user.name and user.email
+- **OpenAI API key** ([Get one here](https://platform.openai.com/api-keys))
+
+### Install from GitHub
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd aigit
+git clone https://github.com/yourusername/aigito.git
+cd aigito
 
 # Install dependencies
 bun install
+# or with npm
+npm install
 
-# Make the CLI globally available (optional)
+# Make globally available (optional)
 bun link
+# or with npm
+npm link
 ```
 
-## Usage
+### Environment Setup
+
+Create a `.env` file or set your OpenAI API key:
+
+```bash
+# Option 1: Environment variable
+export OPENAI_API_KEY="your-api-key-here"
+
+# Option 2: .env file (add to .gitignore!)
+echo "OPENAI_API_KEY=your-api-key-here" > .env
+```
+
+## 📖 Usage
 
 ### Interactive Mode (Default)
 ```bash
 # Analyze changes and confirm each commit group
+bun index.ts
+# or if globally installed
 aigito
-
-# Or run directly with bun
-bun cli.ts
 ```
 
 ### YOLO Mode
 ```bash
 # Skip confirmations and commit everything automatically
-aigito --yolo
+bun index.ts --yolo
 aigito -y
 ```
 
 ### Help
 ```bash
+bun index.ts --help
 aigito --help
+```
+
+## 🎬 Demo
+
+```
+🤖 aigito - AI-Powered Git Assistant
+
+🤖 Analyzing repository status...
+🤖 Calculating diffs...
+✅ Found 3 file(s) with changes
+🤖 Generating intelligent commit groups...
+ℹ️  Found 2 commit group(s)
+
+📦 Commit Group 1
+Message: feat(auth): add user authentication and JWT validation
+Files:
+  • src/auth.ts
+  • src/middleware/auth.ts
+  • tests/auth.test.ts
+
+? Commit this group? (y/n) y
+🤖 Staging files: src/auth.ts, src/middleware/auth.ts, tests/auth.test.ts
+🤖 Creating commit: feat(auth): add user authentication and JWT validation
+✅ Committed: feat(auth): add user authentication and JWT validation
+
+📦 Commit Group 2
+Message: docs: update API documentation for auth endpoints
+Files:
+  • README.md
+  • docs/api.md
+
+? Commit this group? (y/n) y
+✅ All done! 🎉
 ```
 
 ## CLI Output
@@ -169,3 +232,83 @@ Validation and utility functions:
 - `isomorphic-git` - Git operations in JavaScript
 
 This project was created using `bun init` in bun v1.2.12. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**"Git user.name and user.email must be configured"**
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+```
+
+**"There are already staged files"**
+```bash
+# Either commit existing staged files
+git commit -m "your message"
+# Or unstage them
+git reset
+```
+
+**"OpenAI API Error"**
+- Verify your API key is set correctly
+- Check your OpenAI account has credits
+- Ensure you have access to GPT-4
+
+**"Could not find HEAD"**
+- Make sure you're in a git repository
+- Ensure you have at least one commit in your repository
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+### Development Setup
+
+```bash
+# Clone the repo
+git clone https://github.com/yourusername/aigito.git
+cd aigito
+
+# Install dependencies
+bun install
+
+# Run in development
+bun index.ts
+```
+
+### Guidelines
+
+- Follow the existing code style
+- Add tests for new features
+- Update documentation as needed
+- Use conventional commit messages
+
+## 🔒 Security & Privacy
+
+- **Code Analysis**: This tool analyzes your code locally and sends diff information to OpenAI's API
+- **No Code Storage**: Your code is not stored by the tool or OpenAI beyond the API call
+- **API Security**: Uses OpenAI's secure API endpoints
+- **Local Processing**: All git operations happen locally on your machine
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [OpenAI](https://openai.com/) for the GPT-4 API
+- [isomorphic-git](https://isomorphic-git.org/) for JavaScript git operations
+- [yargs](https://yargs.js.org/) for CLI argument parsing
+- [yoctocolors](https://github.com/sindresorhus/yoctocolors) for terminal colors
+
+## 📞 Support
+
+- 🐛 [Report issues](https://github.com/yourusername/aigito/issues)
+- 💡 [Request features](https://github.com/yourusername/aigito/issues)
+- 📖 [Documentation](https://github.com/yourusername/aigito/blob/main/README.md)
+
+---
+
+**⭐ Star this repo if you find it helpful!**
