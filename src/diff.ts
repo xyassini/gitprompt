@@ -43,6 +43,7 @@ export function calculateLineDiffs(staged: string, workdir: string): LineDiff[] 
 
 async function readStagedContent(filename: string): Promise<string> {
   try {
+    // For unstaged changes, we want to compare against the last committed version (HEAD)
     const stagedBlob = await git.readBlob({
       fs,
       dir: process.cwd(),
@@ -51,7 +52,8 @@ async function readStagedContent(filename: string): Promise<string> {
     });
     return stagedBlob.blob.toString();
   } catch (error) {
-    // File might be newly added, staged content is empty
+    // If file doesn't exist in HEAD (newly added file), return empty
+    console.warn(`Could not read ${filename} from HEAD: ${error}`);
     return "";
   }
 }
