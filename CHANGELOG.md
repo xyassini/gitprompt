@@ -1,3 +1,11 @@
+# [1.1.0](https://github.com/xyassini/gitprompt/compare/v1.0.0...v1.1.0) (2025-05-29)
+
+
+### Features
+
+* **ai:** update system prompt and improve formatting ([c6a5324](https://github.com/xyassini/gitprompt/commit/c6a5324acb0772bfbc88ae99c2018cf98453ad7a))
+* **diff:** implement unified diff generation and update types/tests ([b440edf](https://github.com/xyassini/gitprompt/commit/b440edfd35275c8b94675ed15e7fef9cb26d6927))
+
 # 1.0.0 (2025-05-29)
 
 
