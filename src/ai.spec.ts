@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { parseCommitGroups, readGitPromptFile, findGitRoot } from "./ai";
+import { parseCommitGroups, readGitPromptFile, findGitRoot, readRulesFile } from "./ai";
 
 describe("ai", () => {
   describe("parseCommitGroups", () => {
@@ -100,6 +100,36 @@ describe("ai", () => {
       // If we have a .gitprompt file, it should contain some content
       if (userRules.length > 0) {
         expect(userRules).toContain("conventional commit");
+      }
+    });
+  });
+
+  describe("readRulesFile", () => {
+    it("should throw error for non-existent file", async () => {
+      const nonExistentPath = "/path/that/does/not/exist.txt";
+      
+      await expect(readRulesFile(nonExistentPath)).rejects.toThrow(`Failed to read rules file at ${nonExistentPath}`);
+    });
+
+    it("should read file content and trim whitespace", async () => {
+      // Create a temporary test file
+      const testContent = "  test rules content  \n";
+      const testFilePath = "/tmp/test-rules.txt";
+      
+      try {
+        await Bun.write(testFilePath, testContent);
+        const result = await readRulesFile(testFilePath);
+        expect(result).toBe("test rules content");
+      } finally {
+        // Clean up
+        try {
+          await Bun.file(testFilePath).text();
+          // If file exists, remove it
+          const fs = await import("fs/promises");
+          await fs.unlink(testFilePath);
+        } catch {
+          // File doesn't exist, that's fine
+        }
       }
     });
   });

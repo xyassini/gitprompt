@@ -37,6 +37,7 @@ const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
 interface CliArgs {
   yolo: boolean;
   dryRun: boolean;
+  rules?: string;
 }
 
 function logProgress(message: string): void {
@@ -157,6 +158,11 @@ async function main() {
       default: false,
       description: "Show what would be done without actually staging or committing files"
     })
+    .option("rules", {
+      alias: "r",
+      type: "string",
+      description: "Path to custom rules file (instead of .gitprompt)"
+    })
     .help()
     .version(packageJson.version)
     .parseAsync() as CliArgs;
@@ -189,7 +195,7 @@ async function main() {
     logSuccess(`Found ${diffs.length} file(s) with changes`);
 
     logProgress("Generating intelligent commit groups...");
-    const aiResponse = await generateCommitGroups(diffs);
+    const aiResponse = await generateCommitGroups(diffs, argv.rules);
 
     logProgress("Parsing AI recommendations...");
     const commitGroups = parseCommitGroups(aiResponse);

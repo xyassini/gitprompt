@@ -31,6 +31,18 @@ export async function findGitRoot(startDir: string = process.cwd()): Promise<str
 }
 
 /**
+ * Read rules from a custom file path
+ */
+export async function readRulesFile(filePath: string): Promise<string> {
+  try {
+    const content = await fs.readFile(filePath, 'utf8');
+    return content.trim();
+  } catch (error) {
+    throw new Error(`Failed to read rules file at ${filePath}: ${error}`);
+  }
+}
+
+/**
  * Read the .gitprompt file from the git repository root if it exists
  */
 export async function readGitPromptFile(): Promise<string> {
@@ -104,13 +116,16 @@ const SYSTEM_PROMPTS = {
     `,
 };
 
-export async function generateCommitGroups(diffs: Diff[]): Promise<string> {
+export async function generateCommitGroups(diffs: Diff[], rulesFilePath?: string): Promise<string> {
   const branch = await getCurrentBranch();
 
   const additionalContext = `
     Current branch: ${branch}
   `;
-  const userRules = await readGitPromptFile();
+  
+  // Read user rules from custom file path or default .gitprompt file
+  const userRules = rulesFilePath ? await readRulesFile(rulesFilePath) : await readGitPromptFile();
+  
   const response = await generateText({
     model: openai("gpt-4.1"),
     system: SYSTEM_PROMPTS.STAGE(additionalContext, userRules),
