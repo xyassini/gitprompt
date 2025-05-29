@@ -112,6 +112,9 @@ const SYSTEM_PROMPTS = {
 
     ${userRules ? `User rules:
       ${userRules}` : ""}
+
+      -----
+      Do not reply with anything other than the JSON format.
     
     `,
 };
@@ -127,7 +130,7 @@ export async function generateCommitGroups(diffs: Diff[], rulesFilePath?: string
   const userRules = rulesFilePath ? await readRulesFile(rulesFilePath) : await readGitPromptFile();
   
   const response = await generateText({
-    model: openai("gpt-4.1"),
+    model: openai("gpt-4.1-mini"),
     system: SYSTEM_PROMPTS.STAGE(additionalContext, userRules),
     prompt: JSON.stringify(diffs, null, 2),
   });
