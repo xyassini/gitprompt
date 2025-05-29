@@ -19,6 +19,7 @@ An intelligent CLI tool that automatically stages and commits files using AI-pow
 - ✅ **Safety checks** to prevent conflicts with existing staged files
 - 🎨 **Beautiful colored CLI** with interactive confirmations
 - ⚡ **YOLO mode** for automatic commits without confirmation
+- 📋 **Custom rules support** via `.gitprompt` file or `--rules` flag
 
 ## 🚀 Installation
 
@@ -110,27 +111,165 @@ gitprompt --yolo
 gitprompt -y
 ```
 
+### Dry Run Mode
+```bash
+# Preview what would be committed without actually staging or committing files
+gitprompt --dry-run
+# or short form
+gitprompt -d
+
+# Combine with other flags
+gitprompt --dry-run --verbose  # Show detailed output without committing
+gitprompt --dry-run --yolo     # Preview all commits automatically
+```
+
+### Verbose Mode
+```bash
+# Show detailed logging including the AI system prompt and response
+gitprompt --verbose
+# or short form
+gitprompt -v
+
+# Great for debugging or understanding how the AI analyzes your changes
+gitprompt --verbose --dry-run  # See the full AI interaction without committing
+```
+
+### Custom Rules File
+```bash
+# Use a custom rules file instead of .gitprompt
+gitprompt --rules /path/to/your/rules.txt
+# or short form
+gitprompt -r ./my-commit-rules.txt
+
+# Example: Use team-specific rules
+gitprompt --rules ./team-standards.md --verbose
+```
+
+### Combining Flags
+```bash
+# All flags can be combined for powerful workflows
+gitprompt --dry-run --verbose --yolo     # Preview all AI decisions automatically
+gitprompt --rules ./custom.txt --verbose # Use custom rules with detailed output
+gitprompt --yolo --verbose              # Auto-commit with AI interaction details
+```
+
 ### Help
 ```bash
 # View all available options and commands
 gitprompt --help
 ```
 
-### Development Usage
-If you're developing locally from the GitHub repository:
+## 🎯 CLI Options Reference
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--yolo` | `-y` | Skip confirmations and commit everything automatically | `false` |
+| `--dry-run` | `-d` | Show what would be done without actually staging or committing files | `false` |
+| `--rules` | `-r` | Path to custom rules file (instead of .gitprompt) | None |
+| `--verbose` | `-v` | Show detailed logging and system prompt | `false` |
+| `--help` | | Show help information | |
+| `--version` | | Show version number | |
+
+### CLI Output Example
+```
+🤖 gitprompt - AI-Powered Git Assistant
+
+Options:
+  -y, --yolo     Skip confirmations and commit everything automatically
+                                                      [boolean] [default: false]
+  -d, --dry-run  Show what would be done without actually staging or committing
+                 files                                [boolean] [default: false]
+  -r, --rules    Path to custom rules file (instead of .gitprompt)      [string]
+  -v, --verbose  Show detailed logging and system prompt
+                                                      [boolean] [default: false]
+      --help     Show help                                             [boolean]
+      --version  Show version number                                   [boolean]
+```
+
+## 🎛️ Configuration
+
+### `.gitprompt` File
+
+You can customize the AI's behavior by creating a `.gitprompt` file in your repository root. This file allows you to:
+
+- Define custom commit message formats
+- Set project-specific rules and conventions
+- Override default commit type classifications
+- Add context about your project structure
+
+#### Example `.gitprompt` File
+
+```text
+# Project-specific commit rules for gitprompt
+
+## Commit Convention
+Use conventional commits with these scopes:
+- core: Core application logic
+- api: API endpoints and routes  
+- ui: User interface components
+- docs: Documentation changes
+- test: Test files and testing utilities
+- config: Configuration and build files
+
+## Custom Rules
+1. For database migration files, always use "feat(db): add migration for X"
+2. For API routes in /routes directory, use "feat(api): add/update X endpoint"
+3. For React components, use "feat(ui): add/update X component"
+4. For utility functions, prefer "refactor(core): add/update X utility"
+
+## Project Context
+This is a Node.js/React application with:
+- Express.js backend API
+- React frontend with TypeScript
+- PostgreSQL database with Prisma ORM
+- Jest for testing
+
+When analyzing changes, consider this tech stack for better categorization.
+
+## Special Instructions
+- Group related frontend and backend changes together when they implement the same feature
+- Separate database migrations into their own commits
+- Keep test file changes with their corresponding implementation changes
+```
+
+#### `.gitprompt` File Rules
+
+1. **Location**: Must be in the git repository root (same directory as `.git`)
+2. **Format**: Plain text file, any format you prefer (Markdown recommended)
+3. **Content**: Any instructions, rules, or context you want the AI to consider
+4. **Precedence**: Takes priority over default AI instructions
+5. **Fallback**: If no `.gitprompt` file exists, default behavior is used
+
+#### Using Custom Rules Files
+
+Instead of `.gitprompt`, you can specify any custom rules file:
+
 ```bash
-# Interactive mode
-bun src/index.ts
+# Use a different rules file
+gitprompt --rules ./commit-standards.md
 
-# YOLO mode
-bun src/index.ts --yolo
+# Use team-wide rules from a shared location
+gitprompt --rules ~/shared/team-commit-rules.txt
 
-# Help
-bun src/index.ts --help
+# Use rules with other flags
+gitprompt --rules ./rules.txt --dry-run --verbose
+```
+
+### Environment Setup
+
+Create a `.env` file or set your OpenAI API key:
+
+```bash
+# Option 1: Environment variable
+export OPENAI_API_KEY="your-api-key-here"
+
+# Option 2: .env file (add to .gitignore!)
+echo "OPENAI_API_KEY=your-api-key-here" > .env
 ```
 
 ## 🎬 Demo
 
+### Standard Interactive Mode
 ```
 🤖 gitprompt - AI-Powered Git Assistant
 
@@ -160,6 +299,95 @@ Files:
 
 ? Commit this group? (y/n) y
 ✅ All done! 🎉
+```
+
+### Dry Run Mode with Verbose Output
+```
+🤖 gitprompt - AI-Powered Git Assistant
+
+🧪 DRY RUN MODE: No files will be staged or committed
+🔍 VERBOSE MODE: Detailed logging enabled
+
+🤖 Analyzing repository status...
+Found 4 files in status matrix
+Git config: John Doe <john@example.com>
+Found 3 unstaged changes:
+  src/api.ts (head:1, workdir:2, stage:1)
+  tests/api.test.ts (head:0, workdir:2, stage:0)
+  README.md (head:1, workdir:2, stage:1)
+
+🤖 Calculating diffs...
+Diff summary:
+  src/api.ts: modified (12 diff lines)
+  tests/api.test.ts: added (24 diff lines)
+  README.md: modified (3 diff lines)
+
+🤖 Generating intelligent commit groups...
+
+================================================================================
+📋 SYSTEM PROMPT:
+================================================================================
+You are a git assistant that analyzes code changes and generates intelligent commit messages.
+[... full system prompt displayed ...]
+
+📤 SENDING TO AI MODEL: gpt-4.1-mini
+
+📜 Using custom rules from: .gitprompt
+Rules content:
+Use conventional commits with these scopes:
+- api: API endpoints and routes
+- test: Test files and testing utilities
+- docs: Documentation changes
+
+🤖 Parsing AI recommendations...
+📥 AI RESPONSE:
+[
+  {
+    "files": ["src/api.ts", "tests/api.test.ts"],
+    "commitMessage": "feat(api): add user profile endpoint with tests"
+  },
+  {
+    "files": ["README.md"],
+    "commitMessage": "docs: update API documentation"
+  }
+]
+
+ℹ️  Found 2 commit group(s)
+ℹ️  DRY RUN mode - no files will be staged or committed
+
+📦 Commit Group 1
+Message: feat(api): add user profile endpoint with tests
+Files:
+  • src/api.ts
+  • tests/api.test.ts
+
+ℹ️  [DRY RUN] Would stage files: src/api.ts, tests/api.test.ts
+ℹ️  [DRY RUN] Would create commit: feat(api): add user profile endpoint with tests
+✅ [DRY RUN] Would commit: feat(api): add user profile endpoint with tests
+
+📦 Commit Group 2
+Message: docs: update API documentation
+Files:
+  • README.md
+
+ℹ️  [DRY RUN] Would stage files: README.md
+ℹ️  [DRY RUN] Would create commit: docs: update API documentation
+✅ [DRY RUN] Would commit: docs: update API documentation
+
+✅ Dry run completed! 🎉
+```
+
+### Custom Rules Example
+```
+🤖 gitprompt - AI-Powered Git Assistant
+
+📜 Using custom rules from: ./team-standards.md
+Rules content:
+Always prefix database changes with "db:" scope
+Group UI and API changes together for features
+
+🤖 Analyzing repository status...
+[... analysis continues with custom rules applied ...]
 ```
 
 ## CLI Output
@@ -250,9 +478,26 @@ Validation and utility functions:
 
 1. **🔍 Status Check**: Reads git status and validates no files are already staged
 2. **📊 Diff Analysis**: Calculates line-by-line diffs for all unstaged files
-3. **🤖 AI Processing**: Sends diffs to GPT-4 for intelligent file grouping and commit message generation
-4. **📋 Interactive Review**: Shows each commit group and asks for confirmation
-5. **📝 Staging & Committing**: Stages and commits approved groups sequentially
+3. **🎛️ Configuration Loading**: Reads `.gitprompt` file or custom rules file (if specified)
+4. **🤖 AI Processing**: Sends diffs and custom rules to GPT-4 for intelligent file grouping and commit message generation
+5. **📋 Interactive Review**: Shows each commit group and asks for confirmation (unless in YOLO mode)
+6. **🧪 Dry Run Preview**: If in dry-run mode, shows what would be committed without making changes
+7. **📝 Staging & Committing**: Stages and commits approved groups sequentially (skipped in dry-run mode)
+
+### Development Usage
+If you're developing locally from the GitHub repository:
+```bash
+# Interactive mode
+bun src/index.ts
+
+# With new flags
+bun src/index.ts --dry-run --verbose
+bun src/index.ts --rules ./custom-rules.txt
+bun src/index.ts --yolo --dry-run
+
+# Help
+bun src/index.ts --help
+```
 
 ## Configuration
 
@@ -309,6 +554,70 @@ git reset
 **"Could not find HEAD"**
 - Make sure you're in a git repository
 - Ensure you have at least one commit in your repository
+
+### New Features Troubleshooting
+
+**".gitprompt file not being used"**
+- Ensure the file is in the repository root (same level as `.git` folder)
+- Check file permissions are readable
+- Use `--verbose` flag to see if rules are being loaded:
+  ```bash
+  gitprompt --verbose
+  # Look for "Using custom rules from: .gitprompt" message
+  ```
+
+**"Custom rules file not found"**
+```bash
+# Verify the file path exists
+ls -la /path/to/your/rules.txt
+
+# Use absolute path if relative path isn't working
+gitprompt --rules /absolute/path/to/rules.txt
+
+# Check current directory
+pwd
+gitprompt --rules ./rules.txt
+```
+
+**"Dry run mode not showing expected output"**
+- Ensure you have unstaged changes: `git status`
+- Combine with verbose for more details: `gitprompt --dry-run --verbose`
+- Check that files are actually modified: `git diff`
+
+**"Verbose mode too overwhelming"**
+```bash
+# Use dry-run with verbose to see AI behavior without commits
+gitprompt --dry-run --verbose
+
+# Redirect verbose output to file for later review
+gitprompt --verbose 2> gitprompt-debug.log
+
+# Use verbose only when debugging specific issues
+gitprompt --verbose --dry-run | grep -A 10 "SYSTEM PROMPT"
+```
+
+**"AI not following custom rules"**
+- Verify rules file content is clear and specific
+- Use verbose mode to see the exact prompt sent to AI
+- Check that rules file doesn't contain conflicting instructions
+- Test with simple rules first:
+  ```text
+  # Example simple .gitprompt file
+  Always use "feat" for new files
+  Always use "fix" for bug fixes
+  Use scope "core" for src/ directory changes
+  ```
+
+**"Flag combinations not working as expected"**
+```bash
+# Valid combinations
+gitprompt --dry-run --verbose          # ✅ Preview with details
+gitprompt --yolo --dry-run            # ✅ Auto-preview all commits
+gitprompt --rules ./custom.txt --verbose  # ✅ Custom rules with details
+
+# Note: --yolo with interactive prompts is redundant but harmless
+gitprompt --yolo --verbose            # ✅ Auto-commit with AI details
+```
 
 ## 🤝 Contributing
 
