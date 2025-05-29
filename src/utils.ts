@@ -1,4 +1,4 @@
-import type { StatusMatrix } from "../types";
+import type { StatusMatrix } from "./types";
 
 export function validateNoStagedFiles(statusMatrix: StatusMatrix): void {
   const stagedFiles = statusMatrix.filter(([_, head, __, stage]) => stage !== head);
