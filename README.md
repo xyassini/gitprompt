@@ -312,3 +312,27 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **⭐ Star this repo if you find it helpful!**
+
+## 🧪 Testing
+
+The project includes comprehensive tests for all core functionality:
+
+```bash
+# Run all tests
+bun test
+
+# Run tests in watch mode
+bun test --watch
+npm run test:watch
+```
+
+### Test Coverage
+
+- **🛠️ Utils**: Validation functions, error handling, logging
+- **📊 Diff**: Line-by-line diff calculation, file change detection  
+- **🔧 Git**: Status matrix parsing, configuration reading, file staging logic
+- **🤖 AI**: Commit group parsing, error handling
+
+Tests use Bun's built-in test runner with mocking for external dependencies.
+
+## 🎬 Demo
