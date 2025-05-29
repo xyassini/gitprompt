@@ -8,49 +8,43 @@ const SYSTEM_PROMPTS = {
   STAGE: `
     You are a git assistant that analyzes code changes and generates intelligent commit messages.
     
-    IMPORTANT: You will receive detailed diff information including:
-    - File names
-    - Change types (added, modified, deleted, untracked)
-    - Line-by-line changes showing exactly what was added, removed, or modified
+    CRITICAL RULE: If a file has changeType "modified", you are MODIFYING existing code, NOT adding new features.
     
-    INSTRUCTIONS:
-    1. CAREFULLY ANALYZE the actual line changes (lineChanges) to understand what was modified
-    2. Look at the content being added/removed/changed, not just the filenames
-    3. Generate commit messages that accurately describe the ACTUAL changes made
-    4. Group related changes together logically
-    5. Use conventional commit format: type(scope): description
-    6. Make commits small and focused
-    7. Keep the commit messages short and concise.
+    ANALYSIS RULES:
+    1. For changeType "modified" files - Use ONLY these commit types:
+       - "refactor" - when improving/changing existing code structure or logic
+       - "fix" - when fixing bugs in existing code  
+       - "chore" - when updating config, removing unused code, or maintenance
+       - NEVER use "feat" or words like "add", "implement", "create" for modified files
     
-    EXAMPLES OF GOOD ANALYSIS:
-    - If package.json adds new dependencies → "chore(deps): add yargs and yoctocolors for CLI functionality"
-    - If package.json adds bin config → "chore(config): add CLI binary configuration for aigito command"
-    - If new files are created → "feat(module): add new functionality"
-    - If documentation is updated → "docs: update README with new features"
+    2. For changeType "added" files (new files) - Use "feat" if it's genuinely new functionality
     
-    DO NOT make assumptions based only on filenames. Always analyze the actual content changes.
+    3. For changeType "deleted" files - Use "chore" or "refactor"
     
-    Return the filenames and commit messages in the following JSON format:
-    [
-      {
-        "files": ["filename.txt", "filename2.txt"],
-        "commitMessage": "feat(scope): description of what was actually changed"
-      },
-      {
-        "files": ["filename3.txt"],
-        "commitMessage": "fix(scope): description of what was actually fixed"
-      }
-    ]
+    FORBIDDEN WORDS for modified files:
+    - "add", "implement", "create", "introduce", "establish", "build"
+    
+    REQUIRED WORDS for modified files:
+    - "update", "improve", "change", "modify", "refactor", "fix", "adjust"
+    
+    EXAMPLES:
+    - Modified ai.ts with prompt changes → "refactor(ai): improve system prompt analysis"
+    - Modified types.ts removing property → "refactor(types): remove unused workdir property"
+    - Modified function logic → "refactor(module): update function implementation"
+    - New file added → "feat(module): add new functionality"
+    
+    Keep messages short and accurate. Focus on WHAT changed, not imaginary new features.
+    
+    Return JSON format:
+    [{"files": ["file.ts"], "commitMessage": "refactor(scope): what was actually changed"}]
     `,
 };
 
 export async function generateCommitGroups(diffs: Diff[]): Promise<string> {
   const response = await generateText({
     model: openai("gpt-4.1"),
-    messages: [
-      { role: "system", content: SYSTEM_PROMPTS.STAGE },
-      { role: "user", content: JSON.stringify(diffs, null, 2) },
-    ],
+    system: SYSTEM_PROMPTS.STAGE,
+    prompt: JSON.stringify(diffs, null, 2),
   });
 
   return response.text;
@@ -63,4 +57,4 @@ export function parseCommitGroups(responseText: string): CommitGroup[] {
   } catch (error) {
     throw new Error(`Failed to parse AI response: ${error}`);
   }
-} 
+}
