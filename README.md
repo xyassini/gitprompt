@@ -8,6 +8,8 @@ An intelligent CLI tool that automatically stages and commits files using AI-pow
 
 > ⚠️ **Note**: This tool requires an OpenAI API key to function. It will analyze your code changes and generate commit messages using GPT-4.
 
+> ⚠️ **Vibe Coded**: The majority of this code was "vibe coded". I use the tool for my own projects, and I checked for any serious bugs and issues, but still: Use at your own risk.
+
 ## ✨ Features
 
 - 🤖 **AI-powered commit messages** using GPT-4 with conventional commit format
@@ -30,7 +32,7 @@ An intelligent CLI tool that automatically stages and commits files using AI-pow
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/aigito.git
+git clone https://github.com/xyassini/aigito.git
 cd aigito
 
 # Install dependencies
@@ -268,7 +270,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/aigito.git
+git clone https://github.com/xyassini/aigito.git
 cd aigito
 
 # Install dependencies
@@ -305,9 +307,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 🐛 [Report issues](https://github.com/yourusername/aigito/issues)
-- 💡 [Request features](https://github.com/yourusername/aigito/issues)
-- 📖 [Documentation](https://github.com/yourusername/aigito/blob/main/README.md)
+- 🐛 [Report issues](https://github.com/xyassini/aigito/issues)
+- 💡 [Request features](https://github.com/xyassini/aigito/issues)
+- 📖 [Documentation](https://github.com/xyassini/aigito/blob/main/README.md)
 
 ---
 
