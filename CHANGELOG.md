@@ -1,3 +1,13 @@
+# [1.2.0](https://github.com/xyassini/gitprompt/compare/v1.1.1...v1.2.0) (2025-05-29)
+
+
+### Features
+
+* **ai:** clarify prompt instructions for small code changes ([87934ac](https://github.com/xyassini/gitprompt/commit/87934acea31e3a8bc66048482ecfaec2e08bc623))
+* **ai:** update and clarify system prompt rules and examples ([779d856](https://github.com/xyassini/gitprompt/commit/779d856d5d456175991a66be4a199327d70d26df))
+* **docs:** update installation and usage instructions for npx/bunx, clarify development and troubleshooting sections ([8505986](https://github.com/xyassini/gitprompt/commit/850598637bfe7ac6942c7f4bf5ea10b053b7485d))
+* **index:** add dynamic version from package.json and restructure imports ([eb26cea](https://github.com/xyassini/gitprompt/commit/eb26cea8160115c61bb00389b4c924af94c91b8c))
+
 ## [1.1.1](https://github.com/xyassini/gitprompt/compare/v1.1.0...v1.1.1) (2025-05-29)
 
 
