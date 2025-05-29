@@ -1,18 +1,56 @@
 {
-  "name": "aigit",
-  "module": "index.ts",
+  "name": "aigito",
+  "version": "0.0.0-development",
+  "description": "AI-powered Git assistant that automatically stages and commits files using intelligent commit message generation",
+  "keywords": [
+    "git",
+    "ai",
+    "cli",
+    "commit",
+    "automation",
+    "gpt",
+    "conventional-commits"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xyassini/aigito.git"
+  },
+  "homepage": "https://github.com/xyassini/aigito#readme",
+  "bugs": {
+    "url": "https://github.com/xyassini/aigito/issues"
+  },
+  "author": "Yassine Zeriouh <git@zeriouh.io>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "type": "module",
-  "private": true,
   "bin": {
-    "aigito": "./src/index.ts"
+    "aigito": "./dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
   },
   "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node --format esm",
     "test": "bun test",
-    "test:watch": "bun test --watch"
+    "test:watch": "bun test --watch",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/yargs": "^17.0.33"
+    "@types/yargs": "^17.0.33",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.2.6",
+    "@semantic-release/npm": "^11.0.2",
+    "@semantic-release/release-notes-generator": "^12.1.0",
+    "semantic-release": "^22.0.12"
   },
   "peerDependencies": {
     "typescript": "^5"
