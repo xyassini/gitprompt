@@ -1,11 +1,56 @@
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import type { CommitGroup } from "./git";
+import { getCurrentBranch, type CommitGroup } from "./git";
 import type { Diff } from "./types";
+import fs from "fs/promises";
+import path from "path";
 
 // AI integration module for intelligent commit generation
+
+/**
+ * Find the git repository root by walking up the directory tree
+ * looking for a .git folder
+ */
+export async function findGitRoot(startDir: string = process.cwd()): Promise<string | null> {
+  let currentDir = startDir;
+  
+  while (currentDir !== path.dirname(currentDir)) {
+    try {
+      const gitPath = path.join(currentDir, '.git');
+      const stats = await fs.stat(gitPath);
+      if (stats.isDirectory() || stats.isFile()) {
+        return currentDir;
+      }
+    } catch (error) {
+      // .git not found in this directory, continue up
+    }
+    currentDir = path.dirname(currentDir);
+  }
+  
+  return null;
+}
+
+/**
+ * Read the .gitprompt file from the git repository root if it exists
+ */
+export async function readGitPromptFile(): Promise<string> {
+  try {
+    const gitRoot = await findGitRoot();
+    if (!gitRoot) {
+      return "";
+    }
+    
+    const gitPromptPath = path.join(gitRoot, '.gitprompt');
+    const content = await fs.readFile(gitPromptPath, 'utf8');
+    return content.trim();
+  } catch (error) {
+    // File doesn't exist or can't be read
+    return "";
+  }
+}
+
 const SYSTEM_PROMPTS = {
-  STAGE: `
+  STAGE: (additionalContext?: string, userRules?: string) => `
     You are a git assistant that analyzes code changes and generates intelligent commit messages.
     
     DIFF FORMAT:
@@ -39,17 +84,36 @@ const SYSTEM_PROMPTS = {
     - New file added → "feat(module): add new functionality"
     
     Keep messages short and accurate. Focus on WHAT changed, not imaginary new features.
-    It is okay to group multiple files together in a commit if they are related to the same feature, fix or refactor.
+    It is okay to group multiple files together in a commit if they are related to the same feature, fix or refactor, but don't put multiple features in the same commit.
+    Example:
+    This is not okay (1 commit):
+      - feat(context): add support for additional context and user rules from .gitprompt file, and implement dry-run mode
+    This is okay (2 commits):
+      - feat(context): add support for additional context and user rules from .gitprompt file
+      - feat(context): implement dry-run mode
     
     Return JSON format:
     [{"files": ["file.ts"], "commitMessage": "refactor(scope): what was actually changed"}]
+
+    ${additionalContext ? `Additional context:
+      ${additionalContext}` : ""}
+
+    ${userRules ? `User rules:
+      ${userRules}` : ""}
+    
     `,
 };
 
 export async function generateCommitGroups(diffs: Diff[]): Promise<string> {
+  const branch = await getCurrentBranch();
+
+  const additionalContext = `
+    Current branch: ${branch}
+  `;
+  const userRules = await readGitPromptFile();
   const response = await generateText({
     model: openai("gpt-4.1"),
-    system: SYSTEM_PROMPTS.STAGE,
+    system: SYSTEM_PROMPTS.STAGE(additionalContext, userRules),
     prompt: JSON.stringify(diffs, null, 2),
   });
 

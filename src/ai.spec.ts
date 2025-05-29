@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { parseCommitGroups } from "./ai";
+import { parseCommitGroups, readGitPromptFile, findGitRoot } from "./ai";
 
 describe("ai", () => {
   describe("parseCommitGroups", () => {
@@ -76,6 +76,27 @@ describe("ai", () => {
       const result = parseCommitGroups(response);
 
       expect(result[0]?.commitMessage).toBe("feat(auth): implement JWT authentication with middleware support");
+    });
+  });
+
+  describe("gitprompt file integration", () => {
+    it("should find git root in current directory", async () => {
+      const gitRoot = await findGitRoot();
+      expect(gitRoot).toBeTruthy();
+      expect(gitRoot).toContain("aigit"); // Should find the current project's git root
+    });
+
+    it("should read .gitprompt file if it exists", async () => {
+      const userRules = await readGitPromptFile();
+      
+      // If .gitprompt exists, it should return non-empty content
+      // If it doesn't exist, it should return empty string
+      expect(typeof userRules).toBe("string");
+      
+      // If we have a .gitprompt file, it should contain some content
+      if (userRules.length > 0) {
+        expect(userRules).toContain("conventional commit");
+      }
     });
   });
 }); 
