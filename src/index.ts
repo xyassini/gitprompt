@@ -3,6 +3,9 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { createInterface } from "readline";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { 
   cyan, 
   green, 
@@ -24,6 +27,12 @@ import {
 import { getDiffs } from "./diff.js";
 import { generateCommitGroups, parseCommitGroups } from "./ai.js";
 import { validateNoStagedFiles, validateNoDiffs } from "./utils.js";
+
+// Get version from package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const packageJsonPath = path.join(__dirname, "../package.json");
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
 
 interface CliArgs {
   yolo: boolean;
@@ -129,7 +138,7 @@ async function main() {
       description: "Skip confirmations and commit everything automatically"
     })
     .help()
-    .version()
+    .version(packageJson.version)
     .parseAsync() as CliArgs;
 
   console.log(bold(cyan("\n🤖 gitprompt - AI-Powered Git Assistant\n")));
