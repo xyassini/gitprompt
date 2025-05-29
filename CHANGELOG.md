@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/xyassini/gitprompt/compare/v1.1.0...v1.1.1) (2025-05-29)
+
+
+### Bug Fixes
+
+* **index:** fix shebang at top of file ([57f6018](https://github.com/xyassini/gitprompt/commit/57f6018ae6581c3d4996bc90c58fad3b7f441140))
+
 # [1.1.0](https://github.com/xyassini/gitprompt/compare/v1.0.0...v1.1.0) (2025-05-29)
 
 
