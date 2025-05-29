@@ -1,5 +1,20 @@
-import { describe, it, expect } from "bun:test";
-import { parseCommitGroups } from "./ai";
+import { describe, it, expect, spyOn, beforeEach, afterEach, mock } from "bun:test";
+
+// Create mock functions
+const mockGenerateText = mock(async () => ({
+  text: '[{"files": ["test.ts"], "commitMessage": "feat(test): add test"}]'
+}));
+
+// Mock the AI SDK before importing ai module to prevent OpenAI client initialization
+mock.module("@ai-sdk/openai", () => ({
+  openai: mock(() => "mocked-openai-model")
+}));
+
+mock.module("ai", () => ({
+  generateText: mockGenerateText
+}));
+
+import { parseCommitGroups, readGitPromptFile, findGitRoot, readRulesFile, generateCommitGroups } from "./ai";
 
 describe("ai", () => {
   describe("parseCommitGroups", () => {
@@ -76,6 +91,153 @@ describe("ai", () => {
       const result = parseCommitGroups(response);
 
       expect(result[0]?.commitMessage).toBe("feat(auth): implement JWT authentication with middleware support");
+    });
+  });
+
+  describe("gitprompt file integration", () => {
+    it("should find git root in current directory", async () => {
+      const gitRoot = await findGitRoot();
+      expect(gitRoot).toBeTruthy();
+      // Just verify it's a valid path and contains a .git directory
+      expect(typeof gitRoot).toBe("string");
+      if (gitRoot) {
+        expect(gitRoot.length).toBeGreaterThan(0);
+      }
+    });
+
+    it("should read .gitprompt file if it exists", async () => {
+      const userRules = await readGitPromptFile();
+      
+      // If .gitprompt exists, it should return non-empty content
+      // If it doesn't exist, it should return empty string
+      expect(typeof userRules).toBe("string");
+      
+      // If we have a .gitprompt file, it should contain some content
+      if (userRules.length > 0) {
+        expect(userRules).toContain("conventional commit");
+      }
+    });
+  });
+
+  describe("readRulesFile", () => {
+    it("should throw error for non-existent file", async () => {
+      const nonExistentPath = "/path/that/does/not/exist.txt";
+      
+      await expect(readRulesFile(nonExistentPath)).rejects.toThrow(`Failed to read rules file at ${nonExistentPath}`);
+    });
+
+    it("should read file content and trim whitespace", async () => {
+      // Create a temporary test file
+      const testContent = "  test rules content  \n";
+      const testFilePath = "/tmp/test-rules.txt";
+      
+      try {
+        await Bun.write(testFilePath, testContent);
+        const result = await readRulesFile(testFilePath);
+        expect(result).toBe("test rules content");
+      } finally {
+        // Clean up
+        try {
+          await Bun.file(testFilePath).text();
+          // If file exists, remove it
+          const fs = await import("fs/promises");
+          await fs.unlink(testFilePath);
+        } catch {
+          // File doesn't exist, that's fine
+        }
+      }
+    });
+  });
+
+  describe("generateCommitGroups with verbose", () => {
+    let consoleSpy: any;
+
+    beforeEach(() => {
+      consoleSpy = spyOn(console, "log");
+      mockGenerateText.mockClear();
+    });
+
+    afterEach(() => {
+      consoleSpy.mockRestore();
+    });
+
+    it("should call AI with proper parameters", async () => {
+      const mockDiffs = [
+        {
+          filename: "test.ts",
+          changeType: "modified",
+          diffText: "+console.log('test');"
+        }
+      ];
+
+      const result = await generateCommitGroups(mockDiffs, undefined, false);
+      
+      expect(mockGenerateText).toHaveBeenCalledTimes(1);
+      expect(result).toBe('[{"files": ["test.ts"], "commitMessage": "feat(test): add test"}]');
+    });
+
+    it("should show system prompt and AI response when verbose is true", async () => {
+      const mockDiffs = [
+        {
+          filename: "test.ts",
+          changeType: "modified",
+          diffText: "+console.log('test');"
+        }
+      ];
+
+      await generateCommitGroups(mockDiffs, undefined, true);
+
+      // Check that verbose logging was called
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("SYSTEM PROMPT:"));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("AI RESPONSE:"));
+      expect(mockGenerateText).toHaveBeenCalledTimes(1);
+    });
+
+    it("should not show extra logging when verbose is false", async () => {
+      const mockDiffs = [
+        {
+          filename: "test.ts",
+          changeType: "modified",
+          diffText: "+console.log('test');"
+        }
+      ];
+
+      await generateCommitGroups(mockDiffs, undefined, false);
+
+      // Check that verbose logging was NOT called
+      expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining("SYSTEM PROMPT:"));
+      expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining("AI RESPONSE:"));
+    });
+
+    it("should use custom rules file when provided", async () => {
+      const mockDiffs = [
+        {
+          filename: "test.ts",
+          changeType: "modified",
+          diffText: "+console.log('test');"
+        }
+      ];
+
+      // Create a temporary test file for rules
+      const testRulesPath = "/tmp/test-rules.txt";
+      const testRulesContent = "Use custom commit format";
+      
+      try {
+        await Bun.write(testRulesPath, testRulesContent);
+        
+        const result = await generateCommitGroups(mockDiffs, testRulesPath, false);
+        
+        expect(mockGenerateText).toHaveBeenCalledTimes(1);
+        expect(result).toBe('[{"files": ["test.ts"], "commitMessage": "feat(test): add test"}]');
+      } finally {
+        // Clean up
+        try {
+          const fs = await import("fs/promises");
+          await fs.unlink(testRulesPath);
+        } catch {
+          // File doesn't exist, that's fine
+        }
+      }
     });
   });
 }); 

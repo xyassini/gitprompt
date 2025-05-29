@@ -1,11 +1,68 @@
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import type { CommitGroup } from "./git";
+import { getCurrentBranch, type CommitGroup } from "./git";
 import type { Diff } from "./types";
+import fs from "fs/promises";
+import path from "path";
 
 // AI integration module for intelligent commit generation
+
+/**
+ * Find the git repository root by walking up the directory tree
+ * looking for a .git folder
+ */
+export async function findGitRoot(startDir: string = process.cwd()): Promise<string | null> {
+  let currentDir = startDir;
+  
+  while (currentDir !== path.dirname(currentDir)) {
+    try {
+      const gitPath = path.join(currentDir, '.git');
+      const stats = await fs.stat(gitPath);
+      if (stats.isDirectory() || stats.isFile()) {
+        return currentDir;
+      }
+    } catch (error) {
+      // .git not found in this directory, continue up
+    }
+    currentDir = path.dirname(currentDir);
+  }
+  
+  return null;
+}
+
+/**
+ * Read rules from a custom file path
+ */
+export async function readRulesFile(filePath: string): Promise<string> {
+  try {
+    const content = await fs.readFile(filePath, 'utf8');
+    return content.trim();
+  } catch (error) {
+    throw new Error(`Failed to read rules file at ${filePath}: ${error}`);
+  }
+}
+
+/**
+ * Read the .gitprompt file from the git repository root if it exists
+ */
+export async function readGitPromptFile(): Promise<string> {
+  try {
+    const gitRoot = await findGitRoot();
+    if (!gitRoot) {
+      return "";
+    }
+    
+    const gitPromptPath = path.join(gitRoot, '.gitprompt');
+    const content = await fs.readFile(gitPromptPath, 'utf8');
+    return content.trim();
+  } catch (error) {
+    // File doesn't exist or can't be read
+    return "";
+  }
+}
+
 const SYSTEM_PROMPTS = {
-  STAGE: `
+  STAGE: (additionalContext?: string, userRules?: string) => `
     You are a git assistant that analyzes code changes and generates intelligent commit messages.
     
     DIFF FORMAT:
@@ -39,19 +96,68 @@ const SYSTEM_PROMPTS = {
     - New file added → "feat(module): add new functionality"
     
     Keep messages short and accurate. Focus on WHAT changed, not imaginary new features.
-    It is okay to group multiple files together in a commit if they are related to the same feature, fix or refactor.
+    It is okay to group multiple files together in a commit if they are related to the same feature, fix or refactor, but don't put multiple features in the same commit.
+    Example:
+    This is not okay (1 commit):
+      - feat(context): add support for additional context and user rules from .gitprompt file, and implement dry-run mode
+    This is okay (2 commits):
+      - feat(context): add support for additional context and user rules from .gitprompt file
+      - feat(context): implement dry-run mode
     
     Return JSON format:
     [{"files": ["file.ts"], "commitMessage": "refactor(scope): what was actually changed"}]
+
+    ${additionalContext ? `Additional context:
+      ${additionalContext}` : ""}
+
+    ${userRules ? `User rules:
+      ${userRules}` : ""}
+
+      -----
+      Do not reply with anything other than the JSON format.
+    
     `,
 };
 
-export async function generateCommitGroups(diffs: Diff[]): Promise<string> {
+export async function generateCommitGroups(diffs: Diff[], rulesFilePath?: string, verbose: boolean = false): Promise<string> {
+  const branch = await getCurrentBranch();
+
+  const additionalContext = `
+    Current branch: ${branch}
+  `;
+  
+  // Read user rules from custom file path or default .gitprompt file
+  const userRules = rulesFilePath ? await readRulesFile(rulesFilePath) : await readGitPromptFile();
+  
+  const systemPrompt = SYSTEM_PROMPTS.STAGE(additionalContext, userRules);
+  
+  if (verbose) {
+    console.log("\n" + "=".repeat(80));
+    console.log("📋 SYSTEM PROMPT:");
+    console.log("=".repeat(80));
+    console.log(systemPrompt);
+    console.log("=".repeat(80));
+    console.log("\n📤 SENDING TO AI MODEL: gpt-4.1-mini\n");
+    
+    if (userRules) {
+      console.log(`📜 Using custom rules from: ${rulesFilePath || '.gitprompt'}`);
+      console.log(`Rules content:\n${userRules}\n`);
+    } else {
+      console.log("📜 No custom rules file found, using default behavior\n");
+    }
+  }
+  
   const response = await generateText({
-    model: openai("gpt-4.1"),
-    system: SYSTEM_PROMPTS.STAGE,
+    model: openai("gpt-4.1-mini"),
+    system: systemPrompt,
     prompt: JSON.stringify(diffs, null, 2),
   });
+
+  if (verbose) {
+    console.log("📥 AI RESPONSE:");
+    console.log(response.text);
+    console.log("\n");
+  }
 
   return response.text;
 }
