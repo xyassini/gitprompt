@@ -1,6 +1,6 @@
 {
   "name": "aigito",
-  "version": "0.0.0-development",
+  "version": "1.0.0",
   "description": "AI-powered Git assistant that automatically stages and commits files using intelligent commit message generation",
   "keywords": [
     "git",
