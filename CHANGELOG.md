@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/xyassini/aigito/compare/v1.0.1...v1.0.2) (2025-05-29)
+
+
+### Bug Fixes
+
+* **ci:** fix release ([8b0c534](https://github.com/xyassini/aigito/commit/8b0c53426a4af73f14165bba2e63027275273569))
+
 ## [1.0.1](https://github.com/xyassini/aigito/compare/v1.0.0...v1.0.1) (2025-05-29)
 
 
