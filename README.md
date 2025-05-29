@@ -28,7 +28,25 @@ An intelligent CLI tool that automatically stages and commits files using AI-pow
 - **Git** configured with user.name and user.email
 - **OpenAI API key** ([Get one here](https://platform.openai.com/api-keys))
 
-### Install from npm (Recommended)
+### Run directly without installing (Recommended)
+
+You can also run `gitprompt` directly without installing it globally:
+
+```bash
+# Run with npx (npm)
+npx gitprompt
+
+# Or with bunx (bun)
+bunx gitprompt
+
+# With options
+npx gitprompt --yolo
+bunx gitprompt --help
+```
+
+This approach downloads and runs the latest version on-demand, which is perfect for occasional use or trying out the tool.
+
+### Install from npm
 
 ```bash
 # Install globally via npm
