@@ -13,7 +13,6 @@ export interface Diff {
   filename: string;
   changeType: string;
   staged: string;
-  workdir: string;
   statusMatrix: [HeadStatus, WorkdirStatus, StageStatus];
   lineChanges: LineDiff[];
 }
