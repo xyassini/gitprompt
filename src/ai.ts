@@ -24,6 +24,10 @@ const SYSTEM_PROMPTS = {
     2. For changeType "added" files (new files) - Use "feat" if it's genuinely new functionality
     
     3. For changeType "deleted" files - Use "chore" or "refactor"
+
+    4. If the modifications look like it is fixing something, use "fix" instead of "refactor"
+
+    5. If the modifications also include small things like reordering imports or small changes to the code, no need to mention it in the commit message unless it's the only change in the file.
     
     EXAMPLES:
     - Modified ai.ts with prompt changes → "feat(ai): improve system prompt analysis"
