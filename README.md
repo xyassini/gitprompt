@@ -12,7 +12,7 @@ An intelligent CLI tool that automatically stages and commits files using AI-pow
 
 ## ✨ Features
 
-- 🤖 **AI-powered commit messages** using GPT-4 with conventional commit format
+- 🤖 **AI-powered commit messages** using GPT-4.1 with conventional commit format
 - 📊 **Line-by-line diff analysis** showing exactly what changed
 - 🎯 **Smart file grouping** for logical commits
 - 🔍 **Detailed change tracking** (added/removed/modified lines)
@@ -28,7 +28,29 @@ An intelligent CLI tool that automatically stages and commits files using AI-pow
 - **Git** configured with user.name and user.email
 - **OpenAI API key** ([Get one here](https://platform.openai.com/api-keys))
 
-### Install from GitHub
+### Install from npm (Recommended)
+
+```bash
+# Install globally via npm
+npm install -g aigito
+
+# Or via yarn
+yarn global add aigito
+
+# Or via pnpm
+pnpm add -g aigito
+
+# Or via bun
+bun install -g aigito
+```
+
+After installation, you can use `aigito` command in any git repository:
+
+```bash
+aigito --help
+```
+
+### Install from GitHub (Development)
 
 ```bash
 # Clone the repository
@@ -63,7 +85,7 @@ echo "OPENAI_API_KEY=your-api-key-here" > .env
 ### Interactive Mode (Default)
 ```bash
 # Analyze changes and confirm each commit group
-bun index.ts
+bun src/index.ts
 # or if globally installed
 aigito
 ```
@@ -71,7 +93,7 @@ aigito
 ### YOLO Mode
 ```bash
 # Skip confirmations and commit everything automatically
-bun index.ts --yolo
+bun src/index.ts --yolo
 aigito -y
 ```
 
