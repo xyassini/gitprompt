@@ -5,21 +5,38 @@ import type { CommitGroup } from "./git";
 
 const SYSTEM_PROMPTS = {
   STAGE: `
-    You are a git assistant.
-    You are given a list of unstaged changes.
-    You are to return a list of files that make sense to stage and commit following the conventional commit format.
-    Make sure to group files that make sense to commit together.
-    Make the staged changes and commits small and focused.
-    You are to return the filenames and commit messages in the following JSON format:
-
+    You are a git assistant that analyzes code changes and generates intelligent commit messages.
+    
+    IMPORTANT: You will receive detailed diff information including:
+    - File names
+    - Change types (added, modified, deleted, untracked)
+    - Line-by-line changes showing exactly what was added, removed, or modified
+    
+    INSTRUCTIONS:
+    1. CAREFULLY ANALYZE the actual line changes (lineChanges) to understand what was modified
+    2. Look at the content being added/removed/changed, not just the filenames
+    3. Generate commit messages that accurately describe the ACTUAL changes made
+    4. Group related changes together logically
+    5. Use conventional commit format: type(scope): description
+    6. Make commits small and focused
+    
+    EXAMPLES OF GOOD ANALYSIS:
+    - If package.json adds new dependencies → "chore(deps): add yargs and yoctocolors for CLI functionality"
+    - If package.json adds bin config → "chore(config): add CLI binary configuration for aigito command"
+    - If new files are created → "feat(module): add new functionality"
+    - If documentation is updated → "docs: update README with new features"
+    
+    DO NOT make assumptions based only on filenames. Always analyze the actual content changes.
+    
+    Return the filenames and commit messages in the following JSON format:
     [
       {
         "files": ["filename.txt", "filename2.txt"],
-        "commitMessage": "feat(scope): description"
+        "commitMessage": "feat(scope): description of what was actually changed"
       },
       {
         "files": ["filename3.txt"],
-        "commitMessage": "fix(scope): description"
+        "commitMessage": "fix(scope): description of what was actually fixed"
       }
     ]
     `,
