@@ -1,12 +1,11 @@
 import git, { type HeadStatus, type WorkdirStatus, type StageStatus } from "isomorphic-git";
 import fs from "fs/promises";
-import type { Diff, LineDiff, StatusMatrix } from "./types";
+import type { Diff, StatusMatrix } from "./types";
 
-
-export function calculateLineDiffs(staged: string, workdir: string): LineDiff[] {
+export function generateUnifiedDiff(staged: string, workdir: string): string {
   const stagedLines = staged === '' ? [] : staged.split('\n');
   const workdirLines = workdir === '' ? [] : workdir.split('\n');
-  const lineChanges: LineDiff[] = [];
+  const diffLines: string[] = [];
   
   const maxLines = Math.max(stagedLines.length, workdirLines.length);
   
@@ -16,30 +15,21 @@ export function calculateLineDiffs(staged: string, workdir: string): LineDiff[] 
     
     if (stagedLine === undefined && workdirLine !== undefined) {
       // Line was added
-      lineChanges.push({
-        lineNumber: i + 1,
-        type: 'added',
-        newContent: workdirLine
-      });
+      diffLines.push(`+${workdirLine}`);
     } else if (stagedLine !== undefined && workdirLine === undefined) {
       // Line was removed
-      lineChanges.push({
-        lineNumber: i + 1,
-        type: 'removed',
-        oldContent: stagedLine
-      });
+      diffLines.push(`-${stagedLine}`);
     } else if (stagedLine !== workdirLine) {
-      // Line was modified
-      lineChanges.push({
-        lineNumber: i + 1,
-        type: 'modified',
-        oldContent: stagedLine,
-        newContent: workdirLine
-      });
+      // Line was modified - show as removal then addition
+      diffLines.push(`-${stagedLine}`);
+      diffLines.push(`+${workdirLine}`);
+    } else {
+      // Line unchanged - show without prefix
+      diffLines.push(` ${stagedLine}`);
     }
   }
   
-  return lineChanges;
+  return diffLines.join('\n');
 }
 
 async function readStagedContent(filename: string): Promise<string> {
@@ -58,7 +48,8 @@ async function readStagedContent(filename: string): Promise<string> {
       oid: headSha,
       filepath: filename,
     });
-    return stagedBlob.blob.toString();
+    // Convert Uint8Array to string properly using TextDecoder
+    return new TextDecoder().decode(stagedBlob.blob);
   } catch (error) {
     // If file doesn't exist in HEAD (newly added file), return empty
     return "";
@@ -106,14 +97,12 @@ export async function calculateDiffForFile(
   }
 
   const changeType = determineChangeType(head, workdir, stage);
-  const lineChanges = calculateLineDiffs(stagedContent, workdirContent);
+  const diffText = generateUnifiedDiff(stagedContent, workdirContent);
 
   return {
     filename,
     changeType,
-    staged: stagedContent,
-    statusMatrix: [head, workdir, stage],
-    lineChanges,
+    diffText,
   };
 }
 

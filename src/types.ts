@@ -2,17 +2,8 @@ import type { StageStatus, HeadStatus, StatusRow, WorkdirStatus } from "isomorph
 
 export type StatusMatrix = StatusRow[];
 
-export interface LineDiff {
-  lineNumber: number;
-  type: 'added' | 'removed' | 'modified';
-  oldContent?: string;
-  newContent?: string;
-}
-
 export interface Diff {
   filename: string;
   changeType: string;
-  staged: string;
-  statusMatrix: [HeadStatus, WorkdirStatus, StageStatus];
-  lineChanges: LineDiff[];
+  diffText: string;
 }
