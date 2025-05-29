@@ -36,6 +36,7 @@ const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
 
 interface CliArgs {
   yolo: boolean;
+  dryRun: boolean;
 }
 
 function logProgress(message: string): void {
@@ -92,9 +93,14 @@ function displayCommitGroup(group: CommitGroup, index: number): void {
 async function processCommitGroupsInteractive(
   commitGroups: CommitGroup[],
   config: any,
-  yolo: boolean
+  yolo: boolean,
+  dryRun: boolean
 ): Promise<void> {
   logInfo(`Found ${commitGroups.length} commit group(s)`);
+  
+  if (dryRun) {
+    logInfo("DRY RUN mode - no files will be staged or committed");
+  }
   
   if (yolo) {
     logInfo("YOLO mode enabled - committing all groups automatically");
@@ -106,24 +112,32 @@ async function processCommitGroupsInteractive(
     let shouldCommit = yolo;
     
     if (!yolo) {
-      shouldCommit = await promptConfirmation(`Commit this group?`);
+      const action = dryRun ? "Show what would be committed for this group?" : "Commit this group?";
+      shouldCommit = await promptConfirmation(action);
     }
     
     if (shouldCommit) {
       try {
-        logProgress(`Staging files: ${group.files.join(", ")}`);
-        await stageFiles(group.files);
-        
-        logProgress(`Creating commit: ${group.commitMessage}`);
-        await commitChanges(group.commitMessage, config, false);
-        
-        logSuccess(`Committed: ${group.commitMessage}`);
+        if (dryRun) {
+          logInfo(`[DRY RUN] Would stage files: ${group.files.join(", ")}`);
+          logInfo(`[DRY RUN] Would create commit: ${group.commitMessage}`);
+          logSuccess(`[DRY RUN] Would commit: ${group.commitMessage}`);
+        } else {
+          logProgress(`Staging files: ${group.files.join(", ")}`);
+          await stageFiles(group.files, dryRun);
+          
+          logProgress(`Creating commit: ${group.commitMessage}`);
+          await commitChanges(group.commitMessage, config, dryRun);
+          
+          logSuccess(`Committed: ${group.commitMessage}`);
+        }
       } catch (error) {
         logError(`Failed to commit group ${index + 1}: ${error}`);
         throw error;
       }
     } else {
-      console.log(dim(`Skipped commit group ${index + 1}`));
+      const skipMessage = dryRun ? `Skipped showing commit group ${index + 1}` : `Skipped commit group ${index + 1}`;
+      console.log(dim(skipMessage));
     }
   }
 }
@@ -137,11 +151,21 @@ async function main() {
       default: false,
       description: "Skip confirmations and commit everything automatically"
     })
+    .option("dry-run", {
+      alias: "d",
+      type: "boolean",
+      default: false,
+      description: "Show what would be done without actually staging or committing files"
+    })
     .help()
     .version(packageJson.version)
     .parseAsync() as CliArgs;
 
   console.log(bold(cyan("\n🤖 gitprompt - AI-Powered Git Assistant\n")));
+
+  if (argv.dryRun) {
+    console.log(yellow("🧪 DRY RUN MODE: No files will be staged or committed\n"));
+  }
 
   try {
     logProgress("Analyzing repository status...");
@@ -171,9 +195,10 @@ async function main() {
     const commitGroups = parseCommitGroups(aiResponse);
 
     // Process commit groups with interactive confirmation
-    await processCommitGroupsInteractive(commitGroups, gitConfig, argv.yolo);
+    await processCommitGroupsInteractive(commitGroups, gitConfig, argv.yolo, argv.dryRun);
 
-    logSuccess("All done! 🎉");
+    const finalMessage = argv.dryRun ? "Dry run completed! 🎉" : "All done! 🎉";
+    logSuccess(finalMessage);
 
   } catch (error) {
     if (error instanceof Error) {

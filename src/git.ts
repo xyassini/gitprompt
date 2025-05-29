@@ -45,7 +45,11 @@ export function getGitConfig(): GitConfig {
   }
 }
 
-export async function stageFiles(files: string[]): Promise<void> {
+export async function stageFiles(files: string[], dryRun: boolean = false): Promise<void> {
+  if (dryRun) {
+    return; // Skip staging in dry-run mode
+  }
+
   for (const file of files) {
     try {
       // Check if file exists in working directory
@@ -90,10 +94,24 @@ export async function processCommitGroups(
   dryRun: boolean = false
 ): Promise<void> {
   for (const commitGroup of commitGroups) {
-    console.log(`Staging ${commitGroup.files.join(", ")}...`);
-    await stageFiles(commitGroup.files);
+    if (dryRun) {
+      console.log(`[DRY RUN] Would stage ${commitGroup.files.join(", ")}...`);
+      console.log(`[DRY RUN] Would commit ${commitGroup.commitMessage}...`);
+    } else {
+      console.log(`Staging ${commitGroup.files.join(", ")}...`);
+      await stageFiles(commitGroup.files, dryRun);
 
-    console.log(`Committing ${commitGroup.commitMessage}...`);
-    await commitChanges(commitGroup.commitMessage, config, dryRun);
+      console.log(`Committing ${commitGroup.commitMessage}...`);
+      await commitChanges(commitGroup.commitMessage, config, dryRun);
+    }
   }
 } 
+
+export async function getCurrentBranch(): Promise<string | void> {
+  const branch = await git.currentBranch({
+    fs,
+    dir: process.cwd(),
+    fullname: true,
+  });
+  return branch;
+}
