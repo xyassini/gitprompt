@@ -1,4 +1,19 @@
-import { describe, it, expect, spyOn, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, spyOn, beforeEach, afterEach, mock } from "bun:test";
+
+// Create mock functions
+const mockGenerateText = mock(async () => ({
+  text: '[{"files": ["test.ts"], "commitMessage": "feat(test): add test"}]'
+}));
+
+// Mock the AI SDK before importing ai module to prevent OpenAI client initialization
+mock.module("@ai-sdk/openai", () => ({
+  openai: mock(() => "mocked-openai-model")
+}));
+
+mock.module("ai", () => ({
+  generateText: mockGenerateText
+}));
+
 import { parseCommitGroups, readGitPromptFile, findGitRoot, readRulesFile, generateCommitGroups } from "./ai";
 
 describe("ai", () => {
@@ -139,10 +154,26 @@ describe("ai", () => {
 
     beforeEach(() => {
       consoleSpy = spyOn(console, "log");
+      mockGenerateText.mockClear();
     });
 
     afterEach(() => {
       consoleSpy.mockRestore();
+    });
+
+    it("should call AI with proper parameters", async () => {
+      const mockDiffs = [
+        {
+          filename: "test.ts",
+          changeType: "modified",
+          diffText: "+console.log('test');"
+        }
+      ];
+
+      const result = await generateCommitGroups(mockDiffs, undefined, false);
+      
+      expect(mockGenerateText).toHaveBeenCalledTimes(1);
+      expect(result).toBe('[{"files": ["test.ts"], "commitMessage": "feat(test): add test"}]');
     });
 
     it("should show system prompt and AI response when verbose is true", async () => {
@@ -154,18 +185,12 @@ describe("ai", () => {
         }
       ];
 
-      // Mock the AI response to avoid actual API call
-      const mockGenerateText = async () => ({
-        text: '[{"files": ["test.ts"], "commitMessage": "feat(test): add logging"}]'
-      });
+      await generateCommitGroups(mockDiffs, undefined, true);
 
-      // This test would need proper mocking of the AI SDK
-      // For now, we'll just test that verbose parameter is accepted
-      expect(() => {
-        // Just verify the function signature accepts verbose parameter
-        const result = generateCommitGroups(mockDiffs, undefined, true);
-        expect(result).toBeDefined();
-      }).not.toThrow();
+      // Check that verbose logging was called
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("SYSTEM PROMPT:"));
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("AI RESPONSE:"));
+      expect(mockGenerateText).toHaveBeenCalledTimes(1);
     });
 
     it("should not show extra logging when verbose is false", async () => {
@@ -177,11 +202,42 @@ describe("ai", () => {
         }
       ];
 
-      // Test that verbose parameter defaults to false
-      expect(() => {
-        const result = generateCommitGroups(mockDiffs, undefined, false);
-        expect(result).toBeDefined();
-      }).not.toThrow();
+      await generateCommitGroups(mockDiffs, undefined, false);
+
+      // Check that verbose logging was NOT called
+      expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining("SYSTEM PROMPT:"));
+      expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining("AI RESPONSE:"));
+    });
+
+    it("should use custom rules file when provided", async () => {
+      const mockDiffs = [
+        {
+          filename: "test.ts",
+          changeType: "modified",
+          diffText: "+console.log('test');"
+        }
+      ];
+
+      // Create a temporary test file for rules
+      const testRulesPath = "/tmp/test-rules.txt";
+      const testRulesContent = "Use custom commit format";
+      
+      try {
+        await Bun.write(testRulesPath, testRulesContent);
+        
+        const result = await generateCommitGroups(mockDiffs, testRulesPath, false);
+        
+        expect(mockGenerateText).toHaveBeenCalledTimes(1);
+        expect(result).toBe('[{"files": ["test.ts"], "commitMessage": "feat(test): add test"}]');
+      } finally {
+        // Clean up
+        try {
+          const fs = await import("fs/promises");
+          await fs.unlink(testRulesPath);
+        } catch {
+          // File doesn't exist, that's fine
+        }
+      }
     });
   });
 }); 
