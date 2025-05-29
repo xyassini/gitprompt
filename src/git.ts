@@ -1,7 +1,7 @@
 import git from "isomorphic-git";
 import fs from "fs/promises";
 import { execSync } from "child_process";
-import type { StatusMatrix } from "../types";
+import type { StatusMatrix } from "./types";
 
 export interface GitConfig {
   authorName: string;
