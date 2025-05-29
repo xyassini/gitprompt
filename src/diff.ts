@@ -43,17 +43,23 @@ export function calculateLineDiffs(staged: string, workdir: string): LineDiff[] 
 
 async function readStagedContent(filename: string): Promise<string> {
   try {
-    // For unstaged changes, we want to compare against the last committed version (HEAD)
+    // First resolve HEAD to get the actual commit SHA
+    const headSha = await git.resolveRef({
+      fs,
+      dir: process.cwd(),
+      ref: 'HEAD'
+    });
+    
+    // Now read the blob using the resolved SHA
     const stagedBlob = await git.readBlob({
       fs,
       dir: process.cwd(),
-      oid: "HEAD",
+      oid: headSha,
       filepath: filename,
     });
     return stagedBlob.blob.toString();
   } catch (error) {
     // If file doesn't exist in HEAD (newly added file), return empty
-    console.warn(`Could not read ${filename} from HEAD: ${error}`);
     return "";
   }
 }
