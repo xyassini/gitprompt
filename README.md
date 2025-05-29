@@ -80,23 +80,35 @@ echo "OPENAI_API_KEY=your-api-key-here" > .env
 
 ### Interactive Mode (Default)
 ```bash
-# Analyze changes and confirm each commit group
-bun src/index.ts
-# or if globally installed
+# Navigate to your git repository and run
 aigito
 ```
 
 ### YOLO Mode
 ```bash
 # Skip confirmations and commit everything automatically
-bun src/index.ts --yolo
+aigito --yolo
+# or short form
 aigito -y
 ```
 
 ### Help
 ```bash
-bun index.ts --help
+# View all available options and commands
 aigito --help
+```
+
+### Development Usage
+If you're developing locally from the GitHub repository:
+```bash
+# Interactive mode
+bun src/index.ts
+
+# YOLO mode
+bun src/index.ts --yolo
+
+# Help
+bun src/index.ts --help
 ```
 
 ## 🎬 Demo
@@ -295,7 +307,7 @@ cd aigito
 bun install
 
 # Run in development
-bun index.ts
+bun src/index.ts
 ```
 
 ### Guidelines
