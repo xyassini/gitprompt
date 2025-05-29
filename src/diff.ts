@@ -1,6 +1,6 @@
 import git, { type HeadStatus, type WorkdirStatus, type StageStatus } from "isomorphic-git";
 import fs from "fs/promises";
-import type { Diff, StatusMatrix, LineDiff } from "../types";
+import type { Diff, StatusMatrix, LineDiff } from "./types";
 
 export function calculateLineDiffs(staged: string, workdir: string): LineDiff[] {
   const stagedLines = staged.split('\n');
