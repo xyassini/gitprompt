@@ -59,13 +59,9 @@ cd aigito
 
 # Install dependencies
 bun install
-# or with npm
-npm install
 
 # Make globally available (optional)
 bun link
-# or with npm
-npm link
 ```
 
 ### Environment Setup
@@ -347,7 +343,6 @@ bun test
 
 # Run tests in watch mode
 bun test --watch
-npm run test:watch
 ```
 
 ### Test Coverage
