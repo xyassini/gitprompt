@@ -353,5 +353,3 @@ bun test --watch
 - **🤖 AI**: Commit group parsing, error handling
 
 Tests use Bun's built-in test runner with mocking for external dependencies.
-
-## 🎬 Demo
