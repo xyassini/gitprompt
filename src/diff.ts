@@ -112,7 +112,6 @@ export async function calculateDiffForFile(
     filename,
     changeType,
     staged: stagedContent,
-    workdir: workdirContent,
     statusMatrix: [head, workdir, stage],
     lineChanges,
   };
