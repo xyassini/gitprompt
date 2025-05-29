@@ -155,6 +155,28 @@ async function main() {
     
     logSuccess(`Found ${diffs.length} file(s) with changes`);
 
+    // Debug: Let's see what's actually being sent to the AI
+    console.log("\n" + bold(yellow("🔍 DEBUG: Diff data being sent to AI:")));
+    diffs.forEach((diff, index) => {
+      console.log(`\n${bold(`File ${index + 1}: ${diff.filename}`)}`);
+      console.log(`Change type: ${diff.changeType}`);
+      console.log(`Status matrix: [${diff.statusMatrix.join(', ')}]`);
+      console.log(`Staged content length: ${diff.staged.length} chars`);
+      console.log(`Working content length: ${diff.workdir.length} chars`);
+      console.log(`Line changes count: ${diff.lineChanges.length}`);
+      
+      if (diff.lineChanges.length <= 10) {
+        console.log("Line changes:");
+        diff.lineChanges.forEach(change => {
+          console.log(`  Line ${change.lineNumber}: ${change.type}`);
+          if (change.oldContent) console.log(`    - ${change.oldContent.substring(0, 100)}...`);
+          if (change.newContent) console.log(`    + ${change.newContent.substring(0, 100)}...`);
+        });
+      } else {
+        console.log(`Too many line changes to display (${diff.lineChanges.length})`);
+      }
+    });
+
     logProgress("Generating intelligent commit groups...");
     const aiResponse = await generateCommitGroups(diffs);
 
