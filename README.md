@@ -1,4 +1,4 @@
-# 🤖 aigito - AI-Powered Git Assistant
+# 🤖 gitprompt - AI-Powered Git Assistant
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -32,30 +32,30 @@ An intelligent CLI tool that automatically stages and commits files using AI-pow
 
 ```bash
 # Install globally via npm
-npm install -g aigito
+npm install -g gitprompt
 
 # Or via yarn
-yarn global add aigito
+yarn global add gitprompt
 
 # Or via pnpm
-pnpm add -g aigito
+pnpm add -g gitprompt
 
 # Or via bun
-bun install -g aigito
+bun install -g gitprompt
 ```
 
-After installation, you can use `aigito` command in any git repository:
+After installation, you can use `gitprompt` command in any git repository:
 
 ```bash
-aigito --help
+gitprompt --help
 ```
 
 ### Install from GitHub (Development)
 
 ```bash
 # Clone the repository
-git clone https://github.com/xyassini/aigito.git
-cd aigito
+git clone https://github.com/xyassini/gitprompt.git
+cd gitprompt
 
 # Install dependencies
 bun install
@@ -81,21 +81,21 @@ echo "OPENAI_API_KEY=your-api-key-here" > .env
 ### Interactive Mode (Default)
 ```bash
 # Navigate to your git repository and run
-aigito
+gitprompt
 ```
 
 ### YOLO Mode
 ```bash
 # Skip confirmations and commit everything automatically
-aigito --yolo
+gitprompt --yolo
 # or short form
-aigito -y
+gitprompt -y
 ```
 
 ### Help
 ```bash
 # View all available options and commands
-aigito --help
+gitprompt --help
 ```
 
 ### Development Usage
@@ -114,7 +114,7 @@ bun src/index.ts --help
 ## 🎬 Demo
 
 ```
-🤖 aigito - AI-Powered Git Assistant
+🤖 gitprompt - AI-Powered Git Assistant
 
 🤖 Analyzing repository status...
 🤖 Calculating diffs...
@@ -155,7 +155,7 @@ The CLI provides beautiful colored output with:
 
 ### Example Session
 ```
-🤖 aigito - AI-Powered Git Assistant
+🤖 gitprompt - AI-Powered Git Assistant
 
 🤖 Analyzing repository status...
 🤖 Calculating diffs...
@@ -180,7 +180,7 @@ Files:
 ## Project Structure
 
 ```
-aigit/
+gitprompt/
 ├── src/
 │   ├── git.ts      # Git operations (status, staging, committing)
 │   ├── diff.ts     # Diff calculation and file content analysis
@@ -300,8 +300,8 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ```bash
 # Clone the repo
-git clone https://github.com/xyassini/aigito.git
-cd aigito
+git clone https://github.com/xyassini/gitprompt.git
+cd gitprompt
 
 # Install dependencies
 bun install
@@ -337,9 +337,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 🐛 [Report issues](https://github.com/xyassini/aigito/issues)
-- 💡 [Request features](https://github.com/xyassini/aigito/issues)
-- 📖 [Documentation](https://github.com/xyassini/aigito/blob/main/README.md)
+- 🐛 [Report issues](https://github.com/xyassini/gitprompt/issues)
+- 💡 [Request features](https://github.com/xyassini/gitprompt/issues)
+- 📖 [Documentation](https://github.com/xyassini/gitprompt/blob/main/README.md)
 
 ---
 

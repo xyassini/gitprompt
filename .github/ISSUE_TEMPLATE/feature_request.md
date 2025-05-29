@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for aigito
+about: Suggest an idea for gitprompt
 title: '[FEATURE] '
 labels: 'enhancement'
 assignees: ''
@@ -39,7 +39,7 @@ If applicable, add mockups, examples, or references to similar features in other
 
 ```bash
 # Example of how the new feature might work
-aigito --new-feature [options]
+gitprompt --new-feature [options]
 ```
 
 ## 🎯 Acceptance Criteria

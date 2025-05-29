@@ -1,7 +1,7 @@
 {
-  "name": "aigito",
-  "version": "1.0.2",
-  "description": "AI-powered Git assistant that automatically stages and commits files using intelligent commit message generation",
+  "name": "gitprompt",
+  "version": "1.0.1",
+  "description": "AI-powered git assistant that intelligently groups and commits changes with smart prompts",
   "keywords": [
     "git",
     "ai",
@@ -13,11 +13,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xyassini/aigito.git"
+    "url": "git+https://github.com/xyassini/gitprompt.git"
   },
-  "homepage": "https://github.com/xyassini/aigito#readme",
+  "homepage": "https://github.com/xyassini/gitprompt#readme",
   "bugs": {
-    "url": "https://github.com/xyassini/aigito/issues"
+    "url": "https://github.com/xyassini/gitprompt/issues"
   },
   "author": "Yassine Zeriouh <git@zeriouh.io>",
   "license": "MIT",
@@ -25,7 +25,7 @@
   "module": "dist/index.js",
   "type": "module",
   "bin": {
-    "aigito": "dist/index.js"
+    "gitprompt": "dist/index.js"
   },
   "files": [
     "dist/**/*",

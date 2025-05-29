@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve aigito
+about: Create a report to help us improve gitprompt
 title: '[BUG] '
 labels: 'bug'
 assignees: ''
@@ -11,7 +11,7 @@ A clear and concise description of what the bug is.
 
 ## 🔄 To Reproduce
 Steps to reproduce the behavior:
-1. Run command `aigito ...`
+1. Run command `gitprompt ...`
 2. Set environment variable `...`
 3. See error `...`
 
@@ -29,7 +29,7 @@ Paste any relevant log output here
 - **OS**: [e.g. macOS 14.0, Ubuntu 22.04, Windows 11]
 - **Node.js version**: [e.g. 18.17.0]
 - **Bun version**: [e.g. 1.0.0]
-- **aigito version**: [e.g. 1.0.0]
+- **gitprompt version**: [e.g. 1.0.0]
 - **Git version**: [e.g. 2.41.0]
 
 ## 🔧 Git Configuration

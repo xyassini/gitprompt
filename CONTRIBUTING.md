@@ -1,11 +1,11 @@
-# Contributing to aigito
+# Contributing to gitprompt
 
-Thank you for your interest in contributing to aigito! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to gitprompt! This document provides guidelines and information for contributors.
 
 ## 🚀 Quick Start
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/xyassini/aigito.git`
+2. Clone your fork: `git clone https://github.com/xyassini/gitprompt.git`
 3. Install dependencies: `bun install`
 4. Run tests: `bun test`
 5. Make your changes
@@ -22,8 +22,8 @@ Thank you for your interest in contributing to aigito! This document provides gu
 ### Local Development
 ```bash
 # Clone the repository
-git clone https://github.com/xyassini/aigito.git
-cd aigito
+git clone https://github.com/xyassini/gitprompt.git
+cd gitprompt
 
 # Install dependencies
 bun install
@@ -183,7 +183,7 @@ What should have happened
 - OS: [e.g. macOS 14.0]
 - Node version: [e.g. 18.17.0]
 - Bun version: [e.g. 1.0.0]
-- aigito version: [e.g. 1.0.0]
+- gitprompt version: [e.g. 1.0.0]
 
 **Additional context**
 Any other relevant information
@@ -267,4 +267,4 @@ Contributors will be:
 - 🐛 **Issues**: Create issues for bugs and feature requests
 - 📧 **Email**: Contact maintainers for urgent matters
 
-Thank you for contributing to aigito! 🚀 
+Thank you for contributing to gitprompt! 🚀 

@@ -121,7 +121,7 @@ async function processCommitGroupsInteractive(
 
 async function main() {
   const argv = await yargs(hideBin(process.argv))
-    .usage(bold(cyan("🤖 aigito - AI-Powered Git Assistant")))
+    .usage(bold(cyan("🤖 gitprompt - AI-Powered Git Assistant")))
     .option("yolo", {
       alias: "y",
       type: "boolean",
@@ -132,7 +132,7 @@ async function main() {
     .version()
     .parseAsync() as CliArgs;
 
-  console.log(bold(cyan("\n🤖 aigito - AI-Powered Git Assistant\n")));
+  console.log(bold(cyan("\n🤖 gitprompt - AI-Powered Git Assistant\n")));
 
   try {
     logProgress("Analyzing repository status...");
