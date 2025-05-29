@@ -1,6 +1,6 @@
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import type { Diff } from "../types";
+import type { Diff } from "./types";
 import type { CommitGroup } from "./git";
 
 // AI integration module for intelligent commit generation
