@@ -38,6 +38,7 @@ interface CliArgs {
   yolo: boolean;
   dryRun: boolean;
   rules?: string;
+  verbose: boolean;
 }
 
 function logProgress(message: string): void {
@@ -95,7 +96,8 @@ async function processCommitGroupsInteractive(
   commitGroups: CommitGroup[],
   config: any,
   yolo: boolean,
-  dryRun: boolean
+  dryRun: boolean,
+  verbose: boolean
 ): Promise<void> {
   logInfo(`Found ${commitGroups.length} commit group(s)`);
   
@@ -107,8 +109,17 @@ async function processCommitGroupsInteractive(
     logInfo("YOLO mode enabled - committing all groups automatically");
   }
   
+  if (verbose) {
+    console.log(dim("Processing commit groups with verbose logging enabled"));
+  }
+  
   for (const [index, group] of commitGroups.entries()) {
     displayCommitGroup(group, index);
+    
+    if (verbose) {
+      console.log(dim(`\nProcessing commit group ${index + 1}/${commitGroups.length}`));
+      console.log(dim(`Files to process: ${group.files.length}`));
+    }
     
     let shouldCommit = yolo;
     
@@ -124,21 +135,42 @@ async function processCommitGroupsInteractive(
           logInfo(`[DRY RUN] Would create commit: ${group.commitMessage}`);
           logSuccess(`[DRY RUN] Would commit: ${group.commitMessage}`);
         } else {
+          if (verbose) {
+            console.log(dim(`Starting to stage ${group.files.length} files...`));
+          }
+          
           logProgress(`Staging files: ${group.files.join(", ")}`);
           await stageFiles(group.files, dryRun);
+          
+          if (verbose) {
+            console.log(dim(`Files staged successfully, creating commit...`));
+          }
           
           logProgress(`Creating commit: ${group.commitMessage}`);
           await commitChanges(group.commitMessage, config, dryRun);
           
           logSuccess(`Committed: ${group.commitMessage}`);
+          
+          if (verbose) {
+            console.log(dim(`Commit ${index + 1} completed successfully`));
+          }
         }
       } catch (error) {
         logError(`Failed to commit group ${index + 1}: ${error}`);
+        
+        if (verbose) {
+          console.log(dim(`Error details for group ${index + 1}:`), error);
+        }
+        
         throw error;
       }
     } else {
       const skipMessage = dryRun ? `Skipped showing commit group ${index + 1}` : `Skipped commit group ${index + 1}`;
       console.log(dim(skipMessage));
+      
+      if (verbose) {
+        console.log(dim(`User chose to skip commit group ${index + 1}`));
+      }
     }
   }
 }
@@ -163,6 +195,12 @@ async function main() {
       type: "string",
       description: "Path to custom rules file (instead of .gitprompt)"
     })
+    .option("verbose", {
+      alias: "v",
+      type: "boolean",
+      default: false,
+      description: "Show detailed logging and system prompt"
+    })
     .help()
     .version(packageJson.version)
     .parseAsync() as CliArgs;
@@ -173,18 +211,37 @@ async function main() {
     console.log(yellow("🧪 DRY RUN MODE: No files will be staged or committed\n"));
   }
 
+  if (argv.verbose) {
+    console.log(magenta("🔍 VERBOSE MODE: Detailed logging enabled\n"));
+  }
+
   try {
     logProgress("Analyzing repository status...");
     const statusMatrix = await getStatusMatrix();
+    
+    if (argv.verbose) {
+      console.log(dim(`Found ${statusMatrix.length} files in status matrix`));
+    }
 
     // Validate that there are no staged files
     validateNoStagedFiles(statusMatrix);
 
     // Get git config for author information
     const gitConfig = getGitConfig();
+    
+    if (argv.verbose) {
+      console.log(dim(`Git config: ${gitConfig.authorName} <${gitConfig.authorEmail}>`));
+    }
 
     // Filter for unstaged changes
     const unstagedChanges = getUnstagedChanges(statusMatrix);
+    
+    if (argv.verbose) {
+      console.log(dim(`Found ${unstagedChanges.length} unstaged changes:`));
+      unstagedChanges.forEach(([filename, head, workdir, stage]) => {
+        console.log(dim(`  ${filename} (head:${head}, workdir:${workdir}, stage:${stage})`));
+      });
+    }
 
     logProgress("Calculating diffs...");
     const diffs = await getDiffs(unstagedChanges);
@@ -193,15 +250,27 @@ async function main() {
     validateNoDiffs(diffs.length);
     
     logSuccess(`Found ${diffs.length} file(s) with changes`);
+    
+    if (argv.verbose) {
+      console.log(dim("Diff summary:"));
+      diffs.forEach(diff => {
+        const lines = diff.diffText.split('\n').length;
+        console.log(dim(`  ${diff.filename}: ${diff.changeType} (${lines} diff lines)`));
+      });
+    }
 
     logProgress("Generating intelligent commit groups...");
-    const aiResponse = await generateCommitGroups(diffs, argv.rules);
+    const aiResponse = await generateCommitGroups(diffs, argv.rules, argv.verbose);
 
     logProgress("Parsing AI recommendations...");
     const commitGroups = parseCommitGroups(aiResponse);
+    
+    if (argv.verbose) {
+      console.log(dim(`Successfully parsed ${commitGroups.length} commit groups`));
+    }
 
     // Process commit groups with interactive confirmation
-    await processCommitGroupsInteractive(commitGroups, gitConfig, argv.yolo, argv.dryRun);
+    await processCommitGroupsInteractive(commitGroups, gitConfig, argv.yolo, argv.dryRun, argv.verbose);
 
     const finalMessage = argv.dryRun ? "Dry run completed! 🎉" : "All done! 🎉";
     logSuccess(finalMessage);
