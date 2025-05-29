@@ -119,7 +119,7 @@ const SYSTEM_PROMPTS = {
     `,
 };
 
-export async function generateCommitGroups(diffs: Diff[], rulesFilePath?: string): Promise<string> {
+export async function generateCommitGroups(diffs: Diff[], rulesFilePath?: string, verbose: boolean = false): Promise<string> {
   const branch = await getCurrentBranch();
 
   const additionalContext = `
@@ -129,11 +129,35 @@ export async function generateCommitGroups(diffs: Diff[], rulesFilePath?: string
   // Read user rules from custom file path or default .gitprompt file
   const userRules = rulesFilePath ? await readRulesFile(rulesFilePath) : await readGitPromptFile();
   
+  const systemPrompt = SYSTEM_PROMPTS.STAGE(additionalContext, userRules);
+  
+  if (verbose) {
+    console.log("\n" + "=".repeat(80));
+    console.log("📋 SYSTEM PROMPT:");
+    console.log("=".repeat(80));
+    console.log(systemPrompt);
+    console.log("=".repeat(80));
+    console.log("\n📤 SENDING TO AI MODEL: gpt-4.1-mini\n");
+    
+    if (userRules) {
+      console.log(`📜 Using custom rules from: ${rulesFilePath || '.gitprompt'}`);
+      console.log(`Rules content:\n${userRules}\n`);
+    } else {
+      console.log("📜 No custom rules file found, using default behavior\n");
+    }
+  }
+  
   const response = await generateText({
     model: openai("gpt-4.1-mini"),
-    system: SYSTEM_PROMPTS.STAGE(additionalContext, userRules),
+    system: systemPrompt,
     prompt: JSON.stringify(diffs, null, 2),
   });
+
+  if (verbose) {
+    console.log("📥 AI RESPONSE:");
+    console.log(response.text);
+    console.log("\n");
+  }
 
   return response.text;
 }
