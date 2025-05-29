@@ -27,7 +27,7 @@ const SYSTEM_PROMPTS = {
 
     4. If the modifications look like it is fixing something, use "fix" instead of "refactor"
 
-    5. If the modifications also include small things like reordering imports or small changes to the code, no need to mention it in the commit message unless it's the only change in the file.
+    5. If the modifications also include small things like reordering imports, restructuring imports, or small changes to the code, no need to mention it in the commit message unless it's the only change in the file.
     
     EXAMPLES:
     - Modified ai.ts with prompt changes → "feat(ai): improve system prompt analysis"
