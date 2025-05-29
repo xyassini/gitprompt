@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "bin": {
-    "aigito": "./cli.ts"
+    "aigito": "./src/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
