@@ -46,11 +46,25 @@ export function getGitConfig(): GitConfig {
 }
 
 export async function stageFiles(files: string[]): Promise<void> {
-  await git.add({
-    fs,
-    dir: process.cwd(),
-    filepath: files,
-  });
+  for (const file of files) {
+    try {
+      // Check if file exists in working directory
+      const workdirBuffer = await fs.readFile(`${process.cwd()}/${file}`);
+      // If we get here, file exists, so add it
+      await git.add({
+        fs,
+        dir: process.cwd(),
+        filepath: file,
+      });
+    } catch (error) {
+      // File doesn't exist in working directory, it's been deleted
+      await git.remove({
+        fs,
+        dir: process.cwd(),
+        filepath: file,
+      });
+    }
+  }
 }
 
 export async function commitChanges(
