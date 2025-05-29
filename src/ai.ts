@@ -46,6 +46,7 @@ export async function generateCommitGroups(diffs: Diff[]): Promise<string> {
     system: SYSTEM_PROMPTS.STAGE,
     prompt: JSON.stringify(diffs, null, 2),
   });
+  console.log(JSON.stringify(diffs, null, 2))
 
   return response.text;
 }
