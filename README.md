@@ -31,7 +31,8 @@ An intelligent CLI tool that automatically stages and commits files using AI-pow
 
 ### Run directly without installing (Recommended)
 
-You can also run `gitprompt` directly without installing it globally:
+Make sure you have a global OPENAI_API_KEY environment variable configured, or you supply it directly to the command.
+You can run `gitprompt` directly without installing it globally:
 
 ```bash
 # Run with npx (npm)
@@ -39,6 +40,11 @@ npx gitprompt
 
 # Or with bunx (bun)
 bunx gitprompt
+
+# With OPENAI_API_KEY
+OPENAI_API_KEY=your_api_key_here npx gitprompt
+# Or with bunx (bun)
+OPENAI_API_KEY=your_api_key_here bunx gitprompt
 
 # With options
 npx gitprompt --yolo
