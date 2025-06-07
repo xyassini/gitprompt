@@ -1,6 +1,6 @@
 import { describe, it, expect, spyOn, beforeEach, afterEach } from "bun:test";
-import { validateNoStagedFiles, validateNoDiffs, logProgress, logError } from "./utils";
-import type { StatusMatrix } from "./types";
+import { validateNoStagedFiles, validateNoDiffs, logProgress, logError, estimateTokens, calculateTotalTokens } from "./utils";
+import type { StatusMatrix, Diff } from "./types";
 
 describe("utils", () => {
   let consoleSpy: any;
@@ -79,6 +79,73 @@ describe("utils", () => {
       logError("Test error", error);
       expect(consoleSpy.error).toHaveBeenCalledWith("Test error");
       expect(consoleSpy.error).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe("token counting", () => {
+    describe("estimateTokens", () => {
+      it("should return 0 for empty string", () => {
+        expect(estimateTokens("")).toBe(0);
+        expect(estimateTokens("   ")).toBe(1); // 3 chars / 4 = 0.75, ceil = 1
+      });
+
+      it("should estimate tokens based on character count", () => {
+        expect(estimateTokens("hello")).toBe(2); // 5 chars / 4 = 1.25, ceil = 2
+        expect(estimateTokens("hello world")).toBe(3); // 11 chars / 4 = 2.75, ceil = 3
+        expect(estimateTokens("a".repeat(100))).toBe(25); // 100 chars / 4 = 25
+      });
+
+      it("should handle null or undefined input", () => {
+        expect(estimateTokens(null as any)).toBe(0);
+        expect(estimateTokens(undefined as any)).toBe(0);
+      });
+    });
+
+    describe("calculateTotalTokens", () => {
+      it("should calculate total tokens for system prompt and diffs", () => {
+        const systemPrompt = "test prompt"; // 11 chars = 3 tokens
+        const diffs: Diff[] = [
+          {
+            filename: "test.ts",
+            changeType: "modified",
+            diffText: "+console.log('test');",
+            isBinary: false
+          }
+        ];
+
+        const result = calculateTotalTokens(systemPrompt, diffs);
+        
+        // Should be system prompt tokens + JSON representation tokens
+        expect(result).toBeGreaterThan(3); // At least the system prompt tokens
+        expect(typeof result).toBe("number");
+      });
+
+      it("should handle empty diffs array", () => {
+        const systemPrompt = "test prompt";
+        const diffs: Diff[] = [];
+
+        const result = calculateTotalTokens(systemPrompt, diffs);
+        
+        expect(result).toBeGreaterThan(0);
+        expect(typeof result).toBe("number");
+      });
+
+      it("should handle binary files in diffs", () => {
+        const systemPrompt = "test prompt";
+        const diffs: Diff[] = [
+          {
+            filename: "image.png",
+            changeType: "added",
+            diffText: "Binary file added",
+            isBinary: true
+          }
+        ];
+
+        const result = calculateTotalTokens(systemPrompt, diffs);
+        
+        expect(result).toBeGreaterThan(0);
+        expect(typeof result).toBe("number");
+      });
     });
   });
 }); 

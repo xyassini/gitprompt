@@ -71,6 +71,16 @@ const SYSTEM_PROMPTS = {
     - Lines starting with "+" are ADDED (new content)  
     - Lines starting with " " (space) are UNCHANGED (context)
     
+    BINARY FILES:
+    Some files have "isBinary": true. For these files:
+    - The "diffText" will be a simple description like "Binary file modified" instead of actual diff content
+    - You should generate appropriate commit messages based on the filename and changeType
+    - Common binary file changes:
+      - Images/assets: "feat(assets): add/update/remove [filename]"
+      - Documentation files: "docs: add/update/remove [filename]" 
+      - Dependencies/packages: "chore(deps): add/update/remove [filename]"
+      - Build artifacts: "build: add/update/remove [filename]"
+    
     ANALYSIS RULES:
     1. For changeType "modified" files - Use ONLY these commit types:
        - "refactor" - when improving/changing existing code structure without changing or adding new functionality
@@ -94,6 +104,9 @@ const SYSTEM_PROMPTS = {
     - Modified fucntion logic with removing functionality → "feat(module): remove functionality"
     - Modified function logic with changing functionality → "feat(module): change functionality"
     - New file added → "feat(module): add new functionality"
+    - Binary image added → "feat(assets): add logo.png"
+    - Binary dependency updated → "chore(deps): update package.zip"
+    - Binary file deleted → "chore: remove unused binary.dat"
     
     Keep messages short and accurate. Focus on WHAT changed, not imaginary new features.
     It is okay to group multiple files together in a commit if they are related to the same feature, fix or refactor, but don't put multiple features in the same commit.
@@ -119,7 +132,12 @@ const SYSTEM_PROMPTS = {
     `,
 };
 
-export async function generateCommitGroups(diffs: Diff[], rulesFilePath?: string, verbose: boolean = false): Promise<string> {
+export async function generateCommitGroups(
+  diffs: Diff[], 
+  rulesFilePath?: string, 
+  verbose: boolean = false,
+  maxTokens: number = 10000
+): Promise<string> {
   const branch = await getCurrentBranch();
 
   const additionalContext = `
@@ -130,6 +148,10 @@ export async function generateCommitGroups(diffs: Diff[], rulesFilePath?: string
   const userRules = rulesFilePath ? await readRulesFile(rulesFilePath) : await readGitPromptFile();
   
   const systemPrompt = SYSTEM_PROMPTS.STAGE(additionalContext, userRules);
+  
+  // Calculate token usage before making the API call
+  const { calculateTotalTokens, validateTokenLimit } = await import("./utils.js");
+  const totalTokens = calculateTotalTokens(systemPrompt, diffs);
   
   if (verbose) {
     console.log("\n" + "=".repeat(80));
@@ -145,6 +167,13 @@ export async function generateCommitGroups(diffs: Diff[], rulesFilePath?: string
     } else {
       console.log("📜 No custom rules file found, using default behavior\n");
     }
+  }
+  
+  // Validate token limit and get user confirmation if needed
+  const shouldContinue = await validateTokenLimit(totalTokens, maxTokens, verbose);
+  
+  if (!shouldContinue) {
+    throw new Error("Operation cancelled due to token limit exceeded");
   }
   
   const response = await generateText({

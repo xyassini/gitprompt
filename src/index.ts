@@ -39,6 +39,7 @@ interface CliArgs {
   dryRun: boolean;
   rules?: string;
   verbose: boolean;
+  maxTokens: number;
 }
 
 function logProgress(message: string): void {
@@ -201,6 +202,12 @@ async function main() {
       default: false,
       description: "Show detailed logging and system prompt"
     })
+    .option("max-tokens", {
+      alias: "t",
+      type: "number",
+      default: 10000,
+      description: "Maximum number of tokens to use for AI processing"
+    })
     .help()
     .version(packageJson.version)
     .parseAsync() as CliArgs;
@@ -255,12 +262,13 @@ async function main() {
       console.log(dim("Diff summary:"));
       diffs.forEach(diff => {
         const lines = diff.diffText.split('\n').length;
-        console.log(dim(`  ${diff.filename}: ${diff.changeType} (${lines} diff lines)`));
+        const binaryIndicator = diff.isBinary ? " [BINARY]" : "";
+        console.log(dim(`  ${diff.filename}: ${diff.changeType} (${lines} diff lines)${binaryIndicator}`));
       });
     }
 
     logProgress("Generating intelligent commit groups...");
-    const aiResponse = await generateCommitGroups(diffs, argv.rules, argv.verbose);
+    const aiResponse = await generateCommitGroups(diffs, argv.rules, argv.verbose, argv.maxTokens);
 
     logProgress("Parsing AI recommendations...");
     const commitGroups = parseCommitGroups(aiResponse);

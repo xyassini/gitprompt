@@ -1,6 +1,85 @@
 import git, { type HeadStatus, type WorkdirStatus, type StageStatus } from "isomorphic-git";
 import fs from "fs/promises";
+import path from "path";
 import type { Diff, StatusMatrix } from "./types";
+
+// Common binary file extensions
+const BINARY_EXTENSIONS = new Set([
+  // Images
+  '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.ico', '.svg', '.tiff', '.tif',
+  // Videos
+  '.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv', '.m4v',
+  // Audio
+  '.mp3', '.wav', '.flac', '.aac', '.ogg', '.wma', '.m4a',
+  // Archives
+  '.zip', '.tar', '.gz', '.bz2', '.7z', '.rar', '.xz',
+  // Documents
+  '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+  // Executables
+  '.exe', '.dll', '.so', '.dylib', '.bin', '.app',
+  // Fonts
+  '.ttf', '.otf', '.woff', '.woff2', '.eot',
+  // Other
+  '.sqlite', '.db', '.iso', '.dmg', '.pkg', '.deb', '.rpm'
+]);
+
+/**
+ * Check if a file is binary based on its extension
+ */
+function isBinaryByExtension(filename: string): boolean {
+  const ext = path.extname(filename).toLowerCase();
+  return BINARY_EXTENSIONS.has(ext);
+}
+
+/**
+ * Check if content is binary by looking for null bytes and non-printable characters
+ */
+function isBinaryByContent(content: string): boolean {
+  if (content.length === 0) return false;
+  
+  // Check for null bytes (strong indicator of binary content)
+  if (content.includes('\0')) return true;
+  
+  // Check for high percentage of non-printable characters
+  // Sample first 8KB of content for performance
+  const sampleSize = Math.min(content.length, 8192);
+  const sample = content.substring(0, sampleSize);
+  
+  let nonPrintableCount = 0;
+  for (let i = 0; i < sample.length; i++) {
+    const charCode = sample.charCodeAt(i);
+    // Consider chars outside printable ASCII range (except common whitespace)
+    if (charCode < 32 && charCode !== 9 && charCode !== 10 && charCode !== 13) {
+      nonPrintableCount++;
+    } else if (charCode > 126) {
+      nonPrintableCount++;
+    }
+  }
+  
+  // If more than 30% of characters are non-printable, consider it binary
+  return (nonPrintableCount / sample.length) > 0.3;
+}
+
+/**
+ * Determine if a file is binary based on filename and content
+ */
+function isBinaryFile(filename: string, stagedContent: string, workdirContent: string): boolean {
+  // First check by extension for performance
+  if (isBinaryByExtension(filename)) {
+    return true;
+  }
+  
+  // Then check content if we have any
+  if (stagedContent && isBinaryByContent(stagedContent)) {
+    return true;
+  }
+  
+  if (workdirContent && isBinaryByContent(workdirContent)) {
+    return true;
+  }
+  
+  return false;
+}
 
 export function generateUnifiedDiff(staged: string, workdir: string): string {
   const stagedLines = staged === '' ? [] : staged.split('\n');
@@ -97,12 +176,21 @@ export async function calculateDiffForFile(
   }
 
   const changeType = determineChangeType(head, workdir, stage);
-  const diffText = generateUnifiedDiff(stagedContent, workdirContent);
+  const isBinary = isBinaryFile(filename, stagedContent, workdirContent);
+  
+  let diffText: string;
+  if (isBinary) {
+    // For binary files, provide metadata instead of diff content
+    diffText = `Binary file ${changeType}`;
+  } else {
+    diffText = generateUnifiedDiff(stagedContent, workdirContent);
+  }
 
   return {
     filename,
     changeType,
     diffText,
+    isBinary,
   };
 }
 
