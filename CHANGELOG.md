@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/xyassini/gitprompt/compare/v1.2.0...v1.3.0) (2025-06-07)
+
+
+### Features
+
+* **ai:** add support for additional context and user rules from .gitprompt file ([b23b8b6](https://github.com/xyassini/gitprompt/commit/b23b8b6c1c5f8a09efeba1b29d3ffe84e489f544))
+* **ai:** add verbose mode to generateCommitGroups for detailed logging ([3d8dc71](https://github.com/xyassini/gitprompt/commit/3d8dc71e61e77e718f2b63848649c88071c385ba))
+* **cli:** add verbose option for detailed logging and system prompt output ([8c78d1c](https://github.com/xyassini/gitprompt/commit/8c78d1c9b54b08e784c730cb6c13e4c94cedb692))
+* **context:** add support for custom rules file via --rules option ([334b9cb](https://github.com/xyassini/gitprompt/commit/334b9cb3837cac184816bd2660a565cdf971487d))
+* **core:** implement dry-run mode for staging and committing ([9a54ba7](https://github.com/xyassini/gitprompt/commit/9a54ba75defecec0c3bb3efd987d6ff754c572e7))
+* **diff:** add binary file detection and token limit handling for AI commit generation ([41e4fc3](https://github.com/xyassini/gitprompt/commit/41e4fc324bf900a6de9fdb15a9baed7aec6b9e63))
+
 # [1.2.0](https://github.com/xyassini/gitprompt/compare/v1.1.1...v1.2.0) (2025-05-29)
 
 
