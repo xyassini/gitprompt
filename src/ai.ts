@@ -136,7 +136,7 @@ export async function generateCommitGroups(
   diffs: Diff[], 
   rulesFilePath?: string, 
   verbose: boolean = false,
-  maxTokens: number = 10000
+  maxTokens: number = 250_000
 ): Promise<string> {
   const branch = await getCurrentBranch();
 
@@ -177,7 +177,7 @@ export async function generateCommitGroups(
   }
   
   const response = await generateText({
-    model: openai("gpt-4.1-mini"),
+    model: openai("gpt-4.1-nano"),
     system: systemPrompt,
     prompt: JSON.stringify(diffs, null, 2),
   });
