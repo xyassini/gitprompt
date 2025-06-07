@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/xyassini/gitprompt/compare/v1.3.0...v1.4.0) (2025-06-07)
+
+
+### Features
+
+* **ai:** increase max token limit and switch to gpt-4.1-nano model for commit generation ([3d651d2](https://github.com/xyassini/gitprompt/commit/3d651d2d20c56219751834e6ebd0b7df5852763d))
+
 # [1.3.0](https://github.com/xyassini/gitprompt/compare/v1.2.0...v1.3.0) (2025-06-07)
 
 
