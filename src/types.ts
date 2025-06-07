@@ -6,4 +6,5 @@ export interface Diff {
   filename: string;
   changeType: string;
   diffText: string;
+  isBinary: boolean;
 }

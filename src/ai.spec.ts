@@ -166,11 +166,12 @@ describe("ai", () => {
         {
           filename: "test.ts",
           changeType: "modified",
-          diffText: "+console.log('test');"
+          diffText: "+console.log('test');",
+          isBinary: false
         }
       ];
 
-      const result = await generateCommitGroups(mockDiffs, undefined, false);
+      const result = await generateCommitGroups(mockDiffs, undefined, false, 10000);
       
       expect(mockGenerateText).toHaveBeenCalledTimes(1);
       expect(result).toBe('[{"files": ["test.ts"], "commitMessage": "feat(test): add test"}]');
@@ -181,11 +182,12 @@ describe("ai", () => {
         {
           filename: "test.ts",
           changeType: "modified",
-          diffText: "+console.log('test');"
+          diffText: "+console.log('test');",
+          isBinary: false
         }
       ];
 
-      await generateCommitGroups(mockDiffs, undefined, true);
+      await generateCommitGroups(mockDiffs, undefined, true, 10000);
 
       // Check that verbose logging was called
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("SYSTEM PROMPT:"));
@@ -198,11 +200,12 @@ describe("ai", () => {
         {
           filename: "test.ts",
           changeType: "modified",
-          diffText: "+console.log('test');"
+          diffText: "+console.log('test');",
+          isBinary: false
         }
       ];
 
-      await generateCommitGroups(mockDiffs, undefined, false);
+      await generateCommitGroups(mockDiffs, undefined, false, 10000);
 
       // Check that verbose logging was NOT called
       expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining("SYSTEM PROMPT:"));
@@ -214,7 +217,8 @@ describe("ai", () => {
         {
           filename: "test.ts",
           changeType: "modified",
-          diffText: "+console.log('test');"
+          diffText: "+console.log('test');",
+          isBinary: false
         }
       ];
 
@@ -225,7 +229,7 @@ describe("ai", () => {
       try {
         await Bun.write(testRulesPath, testRulesContent);
         
-        const result = await generateCommitGroups(mockDiffs, testRulesPath, false);
+        const result = await generateCommitGroups(mockDiffs, testRulesPath, false, 10000);
         
         expect(mockGenerateText).toHaveBeenCalledTimes(1);
         expect(result).toBe('[{"files": ["test.ts"], "commitMessage": "feat(test): add test"}]');
@@ -238,6 +242,50 @@ describe("ai", () => {
           // File doesn't exist, that's fine
         }
       }
+    });
+
+    it("should handle binary files in diff data", async () => {
+      const mockDiffs = [
+        {
+          filename: "image.png",
+          changeType: "added",
+          diffText: "Binary file added",
+          isBinary: true
+        },
+        {
+          filename: "script.js",
+          changeType: "modified",
+          diffText: "+console.log('test');",
+          isBinary: false
+        }
+      ];
+
+      const result = await generateCommitGroups(mockDiffs, undefined, false, 10000);
+      
+      expect(mockGenerateText).toHaveBeenCalledTimes(1);
+      expect(result).toBe('[{"files": ["test.ts"], "commitMessage": "feat(test): add test"}]');
+      
+      // Verify that generateText was called with the binary diff data
+      expect(mockGenerateText).toHaveBeenCalledWith(expect.objectContaining({
+        prompt: expect.stringContaining("image.png")
+      }));
+    });
+
+    it("should respect token limits and proceed when under limit", async () => {
+      const mockDiffs = [
+        {
+          filename: "small.ts",
+          changeType: "modified",
+          diffText: "+test", // Small diff
+          isBinary: false
+        }
+      ];
+
+      // Use a very high token limit to ensure we're under it
+      const result = await generateCommitGroups(mockDiffs, undefined, false, 50000);
+      
+      expect(mockGenerateText).toHaveBeenCalledTimes(1);
+      expect(result).toBe('[{"files": ["test.ts"], "commitMessage": "feat(test): add test"}]');
     });
   });
 }); 

@@ -173,6 +173,7 @@ gitprompt --help
 | `--dry-run` | `-d` | Show what would be done without actually staging or committing files | `false` |
 | `--rules` | `-r` | Path to custom rules file (instead of .gitprompt) | None |
 | `--verbose` | `-v` | Show detailed logging and system prompt | `false` |
+| `--max-tokens` | `-t` | Maximum number of tokens to use for AI processing | `10000` |
 | `--help` | | Show help information | |
 | `--version` | | Show version number | |
 
