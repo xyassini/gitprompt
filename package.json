@@ -1,6 +1,6 @@
 {
   "name": "gitprompt",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "AI-powered git assistant that intelligently groups and commits changes with smart prompts",
   "keywords": [
     "git",

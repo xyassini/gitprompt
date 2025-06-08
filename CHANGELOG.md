@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/xyassini/gitprompt/compare/v1.4.0...v1.4.1) (2025-06-08)
+
+
+### Bug Fixes
+
+* **yolo-mode:** don't rethrow errors in yolo mode ([bdeab26](https://github.com/xyassini/gitprompt/commit/bdeab262f6a18aac42484559abf749672c133865))
+
 # [1.4.0](https://github.com/xyassini/gitprompt/compare/v1.3.0...v1.4.0) (2025-06-07)
 
 
