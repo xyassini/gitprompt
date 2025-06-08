@@ -163,7 +163,13 @@ async function processCommitGroupsInteractive(
           console.log(dim(`Error details for group ${index + 1}:`), error);
         }
         
-        throw error;
+        if (yolo) {
+          // In yolo mode, log the error and continue with the next commit group
+          console.log(yellow(`⚠️  Continuing with remaining commit groups...`));
+        } else {
+          // In interactive mode, re-throw to stop the process for user intervention
+          throw error;
+        }
       }
     } else {
       const skipMessage = dryRun ? `Skipped showing commit group ${index + 1}` : `Skipped commit group ${index + 1}`;
